@@ -1,6 +1,5 @@
 # AI Recon Agent — Settings
 # Skills are user-provided; core engine uses this config.
-
 general:
   name: ai-recon-agent
   version: 0.1.0
