@@ -1,16 +1,27 @@
 #!/usr/bin/env python3
-"""
-Tool Executor — runs tools as subprocess, parses output, handles errors.
+"""Tool Executor — runs tools as subprocess, parses output, handles errors.
 
-Tool Registry:
-- Tools are registered with name, command builder, parser, timeout.
-- Skills register their tools via decorator or explicit registration.
-- Built-in parsers for common output formats (JSON, JSON lines, lines).
+Central execution layer. Tools are registered with:
+  - name: unique identifier (e.g. 'nmap', 'curl_body')
+  - builder: callable(target, **params) → list[str] (argv)
+  - parser: callable(stdout) → dict|list
+  - timeout: max execution seconds
+  - output_format: 'text', 'json', 'json_lines', 'lines', or custom callable
+
+Builders are the safety boundary: workers pass high-level params, builders
+return a validated argv list. No shell=True — only subprocess with argv.
+
+WAF/rate-limit detection: scans tool output for 429, 503, Cloudflare, etc.
 
 Usage:
-    executor = ToolExecutor()
+    executor = ToolExecutor(config={"max_output_chars": 5000})
+    executor.register("whois", builder_fn, parser_fn, timeout=15)
     result = executor.run("whois", target="example.com")
-    # result = {success, raw, parsed, error, returncode}
+    # result == {
+    #   "success": True/False, "raw": "...", "parsed": {},
+    #   "error": None/"...", "returncode": 0, "runtime": 1.2,
+    #   "waf_detected": None/"rate_limit"/"cloudflare"/"waf_block"
+    # }
 """
 
 import os
@@ -22,12 +33,28 @@ from typing import Optional
 
 
 class ToolExecutor:
+    """Registry + subprocess runner for recon tools.
+
+    Key design:
+      - All tools are registered upfront by skill scripts (register_tools.py).
+      - Workers never build commands — they request tool+params, executor
+        calls the registered builder.
+      - Parsers convert stdout to structured dict/list for downstream hooks.
+      - Timeout and output truncation prevent runaway/large-output issues.
+    """
+
     def __init__(self, config: Optional[dict] = None):
+        """Init executor with empty registry + built-in parsers.
+
+        Args:
+            config: Optional dict, supports max_output_chars (default 5000).
+        """
         self.config = config or {}
         self._registry = {}
         self._builtin_parsers()
 
     def _builtin_parsers(self):
+        """Register built-in parser callables by format name."""
         self._parsers = {
             "json": self._parse_json,
             "json_lines": self._parse_json_lines,
@@ -39,13 +66,18 @@ class ToolExecutor:
 
     def register(self, name: str, builder, parser=None,
                  timeout: int = 120, output_format: str = "text"):
-        """Register a tool.
+        """Register a tool for later execution.
+
         Args:
-            name: tool identifier (e.g. 'whois', 'nmap')
-            builder: callable(target, **params) → list[str] (command)
-            parser: callable(stdout: str) → dict|list (optional)
-            timeout: max execution seconds
-            output_format: 'text', 'json', 'json_lines', 'lines', or custom callable
+            name: Tool identifier (e.g. 'whois', 'nmap'). Must be unique.
+            builder: Callable(target, **params) → list[str] (command argv).
+                Must return a list of strings (no shell=True).
+            parser: Callable(stdout: str) → dict|list. Optional; falls back
+                to built-in parser matching output_format.
+            timeout: Max execution time in seconds. Subprocess.TimeoutExpired
+                caught and returned as error dict.
+            output_format: 'text', 'json', 'json_lines', 'lines', or a custom
+                callable with same signature as parser.
         """
         self._registry[name] = {
             "builder": builder,
@@ -54,18 +86,50 @@ class ToolExecutor:
         }
 
     def list_tools(self) -> list[str]:
+        """Return all registered tool names."""
         return list(self._registry.keys())
 
     def get_tool(self, name: str) -> Optional[dict]:
+        """Look up a tool registration entry.
+
+        Args:
+            name: Tool identifier.
+
+        Returns:
+            Registration dict with keys: builder, parser, timeout.
+            None if not found.
+        """
         return self._registry.get(name)
 
     # --- Execution ---
 
     def run(self, tool: str, target: str = "", **params) -> dict:
-        """Run a registered tool.
+        """Run a registered tool as subprocess.
+
+        Flow:
+          1. Lookup tool in registry
+          2. Call builder(target, **params) → argv list
+          3. Validate argv is list[str]
+          4. subprocess.run with capture_output, timeout, extended PATH
+          5. Parse stdout via registered parser
+          6. Run WAF/rate-limit detection
+          7. Return result dict
+
+        Args:
+            tool: Registered tool name.
+            target: Primary target (domain, IP, URL) passed to builder.
+            **params: Additional params forwarded to builder.
 
         Returns:
-            dict with keys: success, raw, parsed, error, returncode, runtime
+            Dict with keys:
+              success (bool): returncode == 0
+              raw (str): truncated stdout+stderr (max max_output_chars)
+              full_raw_length (int): actual output length before truncation
+              parsed (dict|list): parser output or {"_parse_error": ...}
+              error (str|None): stderr if returncode != 0
+              returncode (int): subprocess return code
+              runtime (float): wall-clock seconds
+              waf_detected (str|None): WAF type if detected
         """
         entry = self._registry.get(tool)
         if not entry:
@@ -94,7 +158,7 @@ class ToolExecutor:
                 "raw": "", "parsed": {}, "returncode": -1, "runtime": 0
             }
 
-        # Execute
+        # Execute with custom PATH (go/bin, .local/bin prepended)
         env = os.environ.copy()
         env["PATH"] = f"{env.get('HOME', '')}/go/bin:{env.get('HOME', '')}/.local/bin:{env['PATH']}"
         start = time.time()
@@ -161,19 +225,29 @@ class ToolExecutor:
     # --- Built-in Parsers ---
 
     def _parse_text(self, stdout: str) -> dict:
+        """Return raw text as dict. Truncated to 2000 chars."""
         return {"raw": stdout[:2000]}
 
     def _parse_lines(self, stdout: str) -> list:
+        """Split stdout into non-empty stripped lines."""
         return [line.strip() for line in stdout.splitlines()
                 if line.strip()]
 
     def _parse_json(self, stdout: str) -> dict:
+        """Parse stdout as single JSON object.
+
+        Returns error dict if JSON invalid.
+        """
         try:
             return json.loads(stdout)
         except json.JSONDecodeError:
             return {"_parse_error": "invalid JSON"}
 
     def _parse_json_lines(self, stdout: str) -> list:
+        """Parse stdout as newline-delimited JSON (NDJSON).
+
+        Each line is parsed independently; invalid lines are silently skipped.
+        """
         results = []
         for line in stdout.splitlines():
             line = line.strip()
@@ -188,6 +262,19 @@ class ToolExecutor:
     # --- WAF / Rate-limit Detection ---
 
     def _detect_waf(self, stdout: str) -> Optional[str]:
+        """Detect WAF, rate limiting, or blocks in tool output.
+
+        Matches known patterns:
+          - 429/503 → rate_limit
+          - Cloudflare / Attention Required → cloudflare
+          - blocked / Access Denied → waf_block
+
+        Args:
+            stdout: Full raw output (not truncated).
+
+        Returns:
+            WAF type string or None.
+        """
         patterns = [
             (r"429 Too Many Requests", "rate_limit"),
             (r"503 Service Unavailable", "rate_limit"),
