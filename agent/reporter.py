@@ -141,3 +141,7 @@ class Reporter:
         if self.recommend_fn:
             data["recommendations"] = self.recommend_fn(data["summary"], data["findings"])
         return data
+
+
+
+
