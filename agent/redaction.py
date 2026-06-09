@@ -40,20 +40,3 @@ def redact_mapping(item: dict) -> dict:
             out[key] = value
     return out
 
-
-
-
-
-def is_proof_like_path(path: str) -> bool:
-    return bool(PROOF_NAME_RE.search(str(path or "")))
-
-
-def redact_mapping(item: dict) -> dict:
-    proof_like = is_proof_like_path(item.get("local_path", "")) or is_proof_like_path(item.get("source", ""))
-    out = {}
-    for key, value in item.items():
-        if key in {"summary", "detail", "evidence", "reason", "source"}:
-            out[key] = redact_text(value, proof_like=proof_like and key == "evidence")
-        else:
-            out[key] = value
-    return out
