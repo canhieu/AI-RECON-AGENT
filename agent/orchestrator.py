@@ -1,14 +1,30 @@
 #!/usr/bin/env python3
-"""
-Orchestrator - main worker-driven recon loop.
+"""Orchestrator — main worker-driven recon loop.
 
-Runtime flow per step:
-1. Ask workers, in fixed order, for the next required action.
-2. Execute the registered tool through ToolExecutor.
-3. Ask the LLM only to analyze tool output, not to choose tools.
-4. Save redacted findings, ports, services, tech, artifacts, and action identity.
-5. Trigger evidence-based follow-up hooks such as artifact_analyze and cve_search.
-6. Generate Markdown/JSON reports directly with Reporter when workers finish or max_steps is reached.
+Architecture:
+  - Workers (PortWorker, WebWorker, ServiceWorker, ReportWorker) each
+    implement next_action() to propose the next tool+target deterministically.
+  - Orchestrator iterates workers in fixed priority order, executes the
+    proposed tool via ToolExecutor, then runs post-execution hooks:
+        LLM analysis → save finding → parse ports → save artifacts →
+        analyze artifacts → parse CMS/tech → CVE search → update surface →
+        queue service checks → mark action done.
+  - When all workers return None, the main loop ends and Reporter generates
+    markdown+JSON reports.
+
+Key design decisions:
+  - Tool selection is deterministic (workers), not LLM-based.
+  - LLM is analysis-only: it describes what the tool output means.
+  - Parser output (ports, CMS, artifacts) is authoritative; LLM analysis
+    is supplemental.
+
+Legacy code preserved:
+  - _llm_decision() and _build_decision_prompt() exist but are not called
+    by run(). They remain for reference if LLM-driven mode is re-enabled.
+
+Usage:
+    orch = ReconOrchestrator(target="example.com", max_steps=50)
+    report_paths = orch.run()
 """
 
 import json
@@ -16,7 +32,7 @@ import os
 import time
 import logging
 from collections import Counter
-from urllib.parse import urlparse
+from urllib.parse import urljoin, urlparse
 from typing import Optional
 
 from openai import OpenAI
@@ -35,6 +51,29 @@ logger = logging.getLogger("orchestrator")
 
 
 class ReconOrchestrator:
+    """Main orchestrator: owns state, executor, workers, and the recon loop.
+
+    Attributes:
+        target: Original scan target (domain/IP/URL).
+        max_steps: Max tool execution cycles before force-stop.
+        output_dir: outputs/{safe_target}/
+        state: ReconStateStore (SQLite).
+        executor: ToolExecutor (subprocess runner).
+        llm: OpenAI client for analysis.
+        ui: ConsoleUI (Textual or fallback).
+        workers: [PortWorker, WebWorker, ServiceWorker, ReportWorker] in order.
+        session_id: 12-char hex UUID for current session.
+        artifacts: ArtifactStore (filesystem + index).
+    """
+
+    # ── Recon phase tool chains ────────────────────────────────
+    # Used by WebWorker to iterate through tools in order.
+    WEB_CHAIN = ["httpx", "curl_headers", "cms_detect", "katana", "js_dump", "js_deobfuscate", "js_mine"]
+    FUZZ_CHAIN = ["ffuf_dir", "ffuf_recursive", "ffuf_ext"]
+    CMS_FOLLOW_CHAIN = ["cms_detect"]
+    DEEP_CHAIN = ["arjun", "web_download_interesting", "nuclei_general"]
+    PASSIVE_TOOLS = ["whois", "dig", "crt_sh", "subfinder"]
+
     def __init__(
         self,
         target: str,
@@ -45,6 +84,17 @@ class ReconOrchestrator:
         resume_session_id: Optional[str] = None,
         config: Optional[dict] = None,
     ):
+        """Init orchestrator: load config, create dirs, init state/executor/workers.
+
+        Args:
+            target: Domain, IP, or URL to scan.
+            max_steps: Max tool execution cycles.
+            passive_only: Skip active scanning (whois/dig only).
+            no_service: Skip non-web service interaction checks.
+            verbose: Show detailed tool output in UI.
+            resume_session_id: Resume existing session (load DB, skip init).
+            config: Override settings dict (default: load from config/settings.yaml).
+        """
         self.target = target
         self.max_steps = max_steps
         self.passive_only = passive_only
@@ -115,6 +165,11 @@ class ReconOrchestrator:
         }
 
     def _load_config(self) -> dict:
+        """Load settings from config/settings.yaml.
+
+        Returns:
+            Parsed YAML dict, or empty dict if file not found.
+        """
         import yaml
         try:
             with open("config/settings.yaml") as f:
@@ -123,6 +178,11 @@ class ReconOrchestrator:
             return {}
 
     def _load_system_prompt(self) -> str:
+        """Load AGENT.md as the LLM system prompt.
+
+        Returns:
+            File contents, or fallback string if file not found.
+        """
         try:
             with open("AGENT.md") as f:
                 return f.read()
@@ -132,6 +192,18 @@ class ReconOrchestrator:
     # --- Main Loop ---
 
     def run(self) -> Optional[dict]:
+        """Execute the full recon scan.
+
+        Flow:
+          1. Show banner, init workers, show RTK savings
+          2. Loop: query workers for next action → execute tool → LLM analysis →
+             save findings/ports/tech/artifacts → mark action done → repeat
+          3. When workers done or max_steps reached: generate report
+          4. Show final summary, return report paths
+
+        Returns:
+            Dict: {"markdown": path, "json": path} or None on error.
+        """
         self.ui.show_banner(self.target, self.max_steps)
         if hasattr(self.ui, "init_workers"):
             self.ui.init_workers(self.workers)
@@ -201,6 +273,7 @@ class ReconOrchestrator:
 
         self.state.complete_session(self.session_id)
 
+        # Try to load skill recommendation function
         recommend_fn = None
         skill = get_skill("boot2root-recon")
         if skill:
@@ -215,6 +288,7 @@ class ReconOrchestrator:
                 except Exception:
                     pass
 
+        # Generate report
         if hasattr(self.ui, "show_worker"):
             self.ui.show_worker("report", "generating report", self.worker_labels.get("report", "Report Agent"))
         reporter = Reporter(self.state, self.output_dir, recommend_fn=recommend_fn)
@@ -228,10 +302,32 @@ class ReconOrchestrator:
 
 
     def _cap_list(self, items: list, limit: int = 8) -> dict:
+        """Truncate a list for summary display, preserving total/truncated counts.
+
+        Used by _build_final_summary to cap long lists (ports, findings, etc.).
+
+        Args:
+            items: Full list.
+            limit: Max items to show.
+
+        Returns:
+            Dict: {"items": [...first N], "total": len(items), "truncated": overflow}.
+        """
         clean = [item for item in items if item]
         return {"items": clean[:limit], "total": len(clean), "truncated": max(0, len(clean) - limit)}
 
     def _build_final_summary(self, report_paths: dict) -> dict:
+        """Build a structured final summary for the UI.
+
+        Collects: target, finding counts, severity breakdown, surface info,
+        web targets, non-web ports, tech, high-value findings, artifacts.
+
+        Args:
+            report_paths: Dict from Reporter.generate().
+
+        Returns:
+            Dict with all summary fields for _format_final_summary().
+        """
         findings = self.state.get_all_findings(self.session_id)
         counts = self.state.count_by_severity(self.session_id)
         surface = self.state.get_surface_summary(self.session_id)
@@ -293,14 +389,18 @@ class ReconOrchestrator:
 
     # --- Recon Policy Helpers ---
 
-    # ── Recon phases ──────────────────────────────────────────────
-    WEB_CHAIN = ["httpx", "curl_headers", "cms_detect", "katana", "js_dump", "js_deobfuscate", "js_mine"]
-    FUZZ_CHAIN = ["ffuf_dir", "ffuf_recursive", "ffuf_ext"]
-    CMS_FOLLOW_CHAIN = ["cms_detect"]
-    DEEP_CHAIN = ["arjun", "web_download_interesting", "nuclei_general"]
-    PASSIVE_TOOLS = ["whois", "dig", "crt_sh", "subfinder"]
-
     def _clean_target_host(self, target: str) -> str:
+        """Extract bare hostname/IP from a target string.
+
+        Strips URL scheme, path, and port suffix.
+        Example: "http://example.com:8080/path" → "example.com"
+
+        Args:
+            target: Raw target string.
+
+        Returns:
+            Cleaned hostname or IP.
+        """
         value = str(target or self.target).strip()
         if "://" in value:
             parsed = urlparse(value)
@@ -311,9 +411,25 @@ class ReconOrchestrator:
         return value.strip("[]")
 
     def _is_domain(self, host: str) -> bool:
+        """Check if host looks like a domain (has dots, not pure IP).
+
+        Args:
+            host: Host string.
+
+        Returns:
+            True if it contains at least one dot and isn't all digits+dots.
+        """
         return "." in host and not host.replace(".", "").isdigit()
 
     def _web_targets(self) -> list[str]:
+        """Derive web target URLs from the attack surface.
+
+        Matches ports: 80, 443, 8080, 8000, 8443, 8888, or any HTTP service.
+        Chooses https:// for ports 443/8443 or if service indicates SSL.
+
+        Returns:
+            Deduplicated list of web URLs. Currently only uses first entry.
+        """
         surface = self.state.get_surface_summary(self.session_id)
         host = self._clean_target_host(self.target)
         targets = []
@@ -324,9 +440,22 @@ class ReconOrchestrator:
                 scheme = "https" if port in (443, 8443) or "ssl" in service or service == "https" else "http"
                 suffix = "" if (scheme == "http" and port == 80) or (scheme == "https" and port == 443) else f":{port}"
                 targets.append(f"{scheme}://{host}{suffix}")
-        return list(dict.fromkeys(targets))
+        targets = list(dict.fromkeys(targets))
+        redirect_domain = self._get_redirect_domain()
+        if redirect_domain and targets and not self._needs_hosts_mapping(redirect_domain, host):
+            redirect_url = self._get_redirect_url()
+            targets = [self._redirected_web_url(url, redirect_url, redirect_domain) for url in targets]
+            targets = list(dict.fromkeys(targets))
+        return targets
 
     def _non_web_ports(self) -> list[dict]:
+        """Get non-web ports from attack surface (non-HTTP services).
+
+        Excludes ports: 80, 443, 8080, 8000, 8443, 8888 and any HTTP service.
+
+        Returns:
+            List of port info dicts with port/service keys.
+        """
         surface = self.state.get_surface_summary(self.session_id)
         results = []
         WEB_PORTS = {80, 443, 8080, 8000, 8443, 8888}
@@ -338,45 +467,130 @@ class ReconOrchestrator:
         return results
 
     def _used_tools(self) -> set[str]:
+        """Get set of tool names that already generated findings.
+
+        Used by workers for simple tool-name dedup (legacy path).
+        For exact-action dedup see action_done().
+
+        Returns:
+            Set of tool name strings.
+        """
         return {f.get("tool", "") for f in self.state.get_all_findings(self.session_id)}
 
     def action_key(self, tool: str, target: str = "", params: Optional[dict] = None) -> str:
         """Build exact action identity for tools that run multiple times.
 
+        Format: "tool|target|sorted_params_json"
+
         Tool-name-only dedup would skip valid second passes such as cms_detect
         with paths, curl_body on many directories, or cve_search per version.
+
+        Args:
+            tool: Tool name.
+            target: Target string.
+            params: Params dict (sorted for consistent hash).
+
+        Returns:
+            Unique action key string.
         """
         params_json = json.dumps(params or {}, sort_keys=True, default=str)
         return f"{tool}|{target or ''}|{params_json}"
 
     def action_done(self, tool: str, target: str = "", params: Optional[dict] = None) -> bool:
+        """Check if exact action was already executed.
+
+        Args:
+            tool, target, params: Same as action_key().
+
+        Returns:
+            True if this exact action exists in tool_actions table.
+        """
         return self.state.has_tool_action(self.session_id, self.action_key(tool, target, params))
 
     def mark_action_done(self, tool: str, target: str = "", params: Optional[dict] = None):
+        """Record that an exact action was executed.
+
+        Args:
+            tool, target, params: Same as action_key().
+        """
         self.state.add_tool_action(self.session_id, self.action_key(tool, target, params), tool, target, params or {})
 
-    def _get_redirect_domain(self) -> Optional[str]:
+    def _get_redirect_url(self) -> Optional[str]:
+        """Extract redirect target URL from redirect_check findings."""
         import re
-        for f in self.state.get_all_findings(self.session_id):
-            if f.get("tool") == "redirect_check":
-                ev = (f.get("evidence") or "") + "\n" + (f.get("detail") or "")
-                # Raw output has REDIRECT:URL format
-                m = re.search(r'REDIRECT:https?://([^/\s?]+)', ev)
-                if m:
-                    d = m.group(1).lower().removeprefix("www.")
-                    if "." in d and not d.replace(".", "").isdigit():
-                        return d
+        for f in reversed(self.state.get_all_findings(self.session_id)):
+            if f.get("tool") != "redirect_check":
+                continue
+            blob = "\n".join(str(f.get(k) or "") for k in ("summary", "detail", "evidence"))
+            match = re.search(r'REDIRECT:(https?://[^\s"\']+)', blob)
+            if match:
+                return match.group(1).rstrip('.,;"\'')
+            match = re.search(r'"final_url"\s*:\s*"(https?://[^"\\]+)"', blob)
+            if match:
+                return match.group(1).rstrip('.,;"\'')
+            urls = re.findall(r'https?://[^\s"\'<>]+', blob)
+            if urls:
+                return urls[-1].rstrip('.,;"\'')
+        return None
+
+    def _get_redirect_domain(self) -> Optional[str]:
+        """Extract redirect target domain from redirect_check findings."""
+        redirect_url = self._get_redirect_url()
+        if not redirect_url:
+            return None
+        parsed = urlparse(redirect_url)
+        domain = (parsed.hostname or "").lower().removeprefix("www.")
+        if domain and "." in domain and not domain.replace(".", "").isdigit():
+            return domain
         return None
 
     def _resolve_domain(self, domain: str) -> bool:
+        """Check if a domain resolves via DNS (IPv4)."""
+        return bool(self._domain_ips(domain))
+
+    def _domain_ips(self, domain: str) -> set[str]:
+        """Resolve a domain to IPv4 addresses."""
         try:
             import socket
-            socket.getaddrinfo(domain, 80, socket.AF_INET, socket.SOCK_STREAM)
-            return True
+            return {
+                item[4][0]
+                for item in socket.getaddrinfo(domain, 80, socket.AF_INET, socket.SOCK_STREAM)
+                if item and item[4]
+            }
         except Exception:
-            return False
+            return set()
+
+    def _needs_hosts_mapping(self, domain: str, target_host: str) -> bool:
+        """Return True when redirect domain must map to the original target IP."""
+        try:
+            import ipaddress
+            ipaddress.ip_address(target_host)
+        except ValueError:
+            return not self._resolve_domain(domain)
+        return target_host not in self._domain_ips(domain)
+
+    def _redirected_web_url(self, base_url: str, redirect_url: Optional[str], redirect_domain: str) -> str:
+        """Build a web URL that keeps scheme/port but swaps IP host for redirect domain."""
+        base = urlparse(base_url)
+        redirected = urlparse(redirect_url or "")
+        scheme = redirected.scheme or base.scheme or "http"
+        port = redirected.port or base.port
+        default_port = (scheme == "http" and port == 80) or (scheme == "https" and port == 443)
+        netloc = redirect_domain if not port or default_port else f"{redirect_domain}:{port}"
+        return base._replace(scheme=scheme, netloc=netloc, path="", params="", query="", fragment="").geturl().rstrip("/")
 
     def _crawl_urls(self, base_url: str) -> list[str]:
+        """Collect discovered URLs from crawler/fuzz tool findings.
+
+        Matches URLs and absolute paths from katana/ffuf output evidence.
+        Used as input for JS dump tools.
+
+        Args:
+            base_url: Base URL to resolve relative paths against.
+
+        Returns:
+            Deduplicated URL list, max 200.
+        """
         import re
         urls = []
         for f in self.state.get_all_findings(self.session_id):
@@ -388,7 +602,45 @@ class ReconOrchestrator:
                 urls.append(base_url.rstrip("/") + "/" + path.lstrip("/"))
         return list(dict.fromkeys(u.rstrip('.,;\"\'') for u in urls))[:200]
 
+    def _cms_candidate_paths(self, base_url: str) -> list[str]:
+        """Extract likely app/CMS paths from prior web findings."""
+        import re
+        candidates = []
+        interesting_prefixes = ("admin", "login", "config", "setup", "install", "dashboard", "portal")
+        for finding in self.state.get_all_findings(self.session_id):
+            if finding.get("tool") not in {"whatweb", "httpx", "curl_headers", "redirect_check", "katana"}:
+                continue
+            blob = "\n".join(str(finding.get(k) or "") for k in ("summary", "detail", "evidence"))
+            for match in re.finditer(r'(?i)\blocation\s*[:=]\s*["\']?([^"\'\s,;]+)', blob):
+                candidates.append(match.group(1).strip())
+            for match in re.finditer(r'(?i)redirectlocation[^\n]*?(https?://[^"\'\s,;]+|/[A-Za-z0-9._~:/?#\[\]@!$&()*+,;=%-]+)', blob):
+                candidates.append(match.group(1).strip())
+            for match in re.finditer(r'(?<![A-Za-z0-9_])/(?:' + "|".join(interesting_prefixes) + r')(?:/[A-Za-z0-9._~:/?#\[\]@!$&()*+,;=%-]*)?', blob, re.I):
+                candidates.append(match.group(0).strip())
+
+        urls = []
+        root = base_url.rstrip("/") + "/"
+        for item in candidates:
+            item = item.rstrip('.,;"\'')
+            if not item or item == "/":
+                continue
+            url = item if item.startswith(("http://", "https://")) else urljoin(root, item.lstrip("/"))
+            if url.rstrip("/") != base_url.rstrip("/"):
+                urls.append(url)
+        return list(dict.fromkeys(urls))[:20]
+
     def _next_interesting_web_url(self, base_url: str) -> Optional[str]:
+        """Find first interesting URL discovered by crawler/fuzz.
+
+        Looks for sensitive paths: robots.txt, .env, admin, login, .git, etc.
+        Used to trigger web_download_interesting on high-value targets.
+
+        Args:
+            base_url: Base URL for resolving relative paths.
+
+        Returns:
+            First matching sensitive URL, or None.
+        """
         import re
         sensitive = (
             "robots.txt", "sitemap.xml", ".env", "config", "secret", "backup",
@@ -410,9 +662,25 @@ class ReconOrchestrator:
         return None
 
     def _worker_label(self, worker) -> str:
+        """Get display label for a worker.
+
+        Args:
+            worker: ReconWorker instance.
+
+        Returns:
+            Label string from worker_labels or fallback formatted name.
+        """
         return self.worker_labels.get(worker.name, f"{worker.name.title()} Agent")
 
     def _next_required_action(self) -> Optional[dict]:
+        """Query workers in order for the next required action.
+
+        Iterates PortWorker → WebWorker → ServiceWorker → ReportWorker.
+        First worker to return a non-None action wins.
+
+        Returns:
+            Decision dict (tool, target, params, reason, done) or None.
+        """
         for worker in self.workers:
             action = worker.next_action()
             if action:
@@ -428,6 +696,15 @@ class ReconOrchestrator:
     # Legacy decision helpers remain for reference, but run() no longer calls
     # them. Workers now own tool selection; LLM is analysis-only.
     def _build_decision_prompt(self) -> str:
+        """Build a prompt asking LLM to choose the next tool.
+
+        NOT CURRENTLY CALLED. Preserved as reference for potential
+        LLM-driven mode. Includes: recent findings, tech stack, surface,
+        pending checks, worker chain state, available tools.
+
+        Returns:
+            Full prompt string with JSON output format instructions.
+        """
         findings = self.state.get_recent_findings(self.session_id, limit=8)
         tech = self.state.get_tech_summary(self.session_id)
         surface = self.state.get_surface_summary(self.session_id)
@@ -447,7 +724,7 @@ class ReconOrchestrator:
         if findings:
             parts.append("\nRecent findings:")
             for f in findings:
-                parts.append(f"  [{f['severity']}] {f['tool']} → {f['summary']}")
+                parts.append(f"  [{f['severity']}] {f['tool']} \u2192 {f['summary']}")
 
         if tech:
             parts.append(f"\nTech stack: {tech}")
@@ -469,13 +746,13 @@ class ReconOrchestrator:
             for url in web_targets[:5]:
                 parts.append(f"  - {url}")
 
-        parts.append("\nRecon phases (orchestrator forces Phase 0→2, LLM free in Phase 3):")
-        parts.append("Phase 0: Port discovery — rustscan 1-65535 → nc_scan fallback if needed → nmap -sC -sV on discovered ports only")
-        parts.append("Phase 1: Passive recon (domain target) — whois → dig → crt_sh → subfinder")
+        parts.append("\nRecon phases (orchestrator forces Phase 0\u21922, LLM free in Phase 3):")
+        parts.append("Phase 0: Port discovery \u2014 rustscan 1-65535 \u2192 nc_scan fallback if needed \u2192 nmap -sC -sV on discovered ports only")
+        parts.append("Phase 1: Passive recon (domain target) \u2014 whois \u2192 dig \u2192 crt_sh \u2192 subfinder")
         parts.append("Phase 2a: Web chain - whatweb -> redirect_check -> hosts_add(optional) -> subfinder(if domain) -> ffuf_vhost(if domain) -> httpx -> curl_headers -> cms_detect -> katana -> js_dump -> js_deobfuscate -> js_mine -> ffuf_dir -> ffuf_recursive -> ffuf_ext -> curl_body(on sensitive paths) -> arjun -> web_download_interesting -> nuclei_general")
-        parts.append("Phase 2b: Non-web service checks — smb/ftp/ssh/redis/...")
-        parts.append("Phase 3: Deep analysis — nuclei_tech, deeper fuzz, passive enrichment, optional checks")
-        parts.append("Phase 4: Report — generate_report + done")
+        parts.append("Phase 2b: Non-web service checks \u2014 smb/ftp/ssh/redis/...")
+        parts.append("Phase 3: Deep analysis \u2014 nuclei_tech, deeper fuzz, passive enrichment, optional checks")
+        parts.append("Phase 4: Report \u2014 generate_report + done")
 
         if required_action:
             parts.append(
@@ -500,6 +777,17 @@ Use "tool": "generate_report" to finish only after required port/service/web fol
         return "\n".join(parts)
 
     def _llm_decision(self, prompt: str) -> Optional[dict]:
+        """Ask LLM to choose the next tool.
+
+        NOT CURRENTLY CALLED (workers are deterministic). Uses configured
+        model_decision with system prompt + JSON response format.
+
+        Args:
+            prompt: Decision prompt from _build_decision_prompt().
+
+        Returns:
+            Parsed JSON decision dict, or None on error.
+        """
         try:
             response = self.llm.chat.completions.create(
                 model=self.model_decision,
@@ -522,6 +810,20 @@ Use "tool": "generate_report" to finish only after required port/service/web fol
             return None
 
     def _llm_analysis(self, result: dict, tool: str, target: str) -> Optional[dict]:
+        """Ask LLM to analyze tool output (analysis-only, not tool choice).
+
+        Sends tool output to configured model_analysis with strict JSON response.
+        If LLM fails, returns a default low-severity analysis with raw evidence.
+
+        Args:
+            result: ToolExecutor result dict.
+            tool: Tool name.
+            target: Tool target.
+
+        Returns:
+            Analysis dict with keys: summary, severity, tech_discovered,
+            service_detected, high_value_targets, evidence.
+        """
         prompt = f"""
 Tool: {tool}
 Target: {target}
@@ -567,7 +869,14 @@ Analyze this output. Return JSON. Human-readable fields must be concise caveman 
     # --- Save Results ---
 
     def _analyze_artifact(self, item: dict):
-        """Review saved files locally and store only redacted evidence."""
+        """Run artifact_analyze tool on a saved artifact file.
+
+        Only stores redacted findings in the DB (raw secret data stays
+        in local file only). Skips if tool not registered or already done.
+
+        Args:
+            item: Artifact metadata dict with local_path key.
+        """
         path = item.get("local_path", "")
         if not path or "artifact_analyze" not in self.executor.list_tools():
             return
@@ -589,8 +898,12 @@ Analyze this output. Return JSON. Human-readable fields must be concise caveman 
     def _search_cves_for_tech(self, tech: dict):
         """Run generic CVE/exploit lookup for evidence-backed versions.
 
-        This intentionally uses the local cve_search tool/searchsploit instead
+        Intentionally uses the local cve_search tool/searchsploit instead
         of report-time hardcoding, so results stay generic across CTF targets.
+        Skips if version has no digits or is unknown/none.
+
+        Args:
+            tech: Dict with at least "name" and "version" keys.
         """
         if not isinstance(tech, dict) or "cve_search" not in self.executor.list_tools():
             return
@@ -617,6 +930,23 @@ Analyze this output. Return JSON. Human-readable fields must be concise caveman 
         self.ui.show_finding("medium", summary)
 
     def _save_analysis(self, analysis: dict, tool: str, target: str, result: Optional[dict] = None):
+        """Save LLM analysis results and parse tool output into state.
+
+        This is the central post-execution hook. It:
+          1. Saves the LLM analysis as a finding
+          2. Parses ports from tool output and updates attack_surface
+          3. Parses artifacts from tool output and saves them
+          4. Runs artifact_analyze on each saved artifact
+          5. Parses CMS/tech from tool output (overrides LLM if available)
+          6. Updates tech_stack and triggers CVE search
+          7. Queues service checks for detected ports
+
+        Args:
+            analysis: Dict from _llm_analysis().
+            tool: Tool name.
+            target: Tool target.
+            result: Raw result dict from ToolExecutor.run().
+        """
         severity = analysis.get("severity", "info")
         summary = redact_text(analysis.get("summary", f"Ran {tool} on {target}"))
         detail = redact_text(json.dumps(analysis.get("tech_discovered", [])))
