@@ -1,12 +1,17 @@
 #!/usr/bin/env python3
-"""
-AI Recon Agent — Entry Point
+"""AI Recon Agent — Entry Point
+
+CLI entry that parses args, validates SHINE_API_KEY, creates orchestrator per
+target, and prints report summary. Supports single --target or --targets file.
+Model config is in settings.yaml, not CLI, to keep scans reproducible.
 
 Usage:
     python main.py --target example.com
     python main.py --target example.com --max-steps 50 --verbose
     python main.py --targets targets.txt --threads 3
     python main.py --target example.com --resume <session_id>
+    python main.py --target example.com --passive-only
+    python main.py --target example.com --no-service
 """
 
 import argparse
@@ -19,10 +24,14 @@ from orchestrator import ReconOrchestrator
 
 
 def parse_args() -> argparse.Namespace:
-    """Parse public CLI flags.
+    """Parse and validate CLI flags.
 
-    Runtime intentionally keeps model selection out of CLI; analysis model config
-    comes from settings/environment so scans are reproducible from project config.
+    Mutually exclusive: --target (single) or --targets (file).
+    Runtime flags: --passive-only, --no-service, --max-steps, --resume, --verbose.
+    --threads and --output are parsed for future compat but not fully wired yet.
+
+    Returns:
+        Parsed argparse.Namespace.
     """
     parser = argparse.ArgumentParser(
         description="AI Recon Agent — Autonomous web reconnaissance",
@@ -63,7 +72,17 @@ Examples:
 
 
 def load_targets(args) -> list[str]:
-    """Return one target or non-comment lines from a target file."""
+    """Resolve target list from CLI args.
+
+    If --target, returns single-element list.
+    If --targets, reads file, strips whitespace, skips empty/comment lines.
+
+    Args:
+        args: Parsed argparse.Namespace.
+
+    Returns:
+        List of target strings.
+    """
     if args.target:
         return [args.target]
     with open(args.targets) as f:
@@ -71,7 +90,16 @@ def load_targets(args) -> list[str]:
 
 
 def print_report_summary(json_path: str, max_findings: int = 10):
-    """Print final findings summary to CLI so user need not open report files."""
+    """Print final findings summary to CLI.
+
+    Reads JSON report and prints: count by severity, tech stack, open ports,
+    top findings sorted by severity, recommendations. Saves user from opening
+    report files.
+
+    Args:
+        json_path: Path to recon-report.json.
+        max_findings: Max findings to show in CLI (default 10).
+    """
     try:
         with open(json_path) as f:
             report = json.load(f)
@@ -125,10 +153,19 @@ def print_report_summary(json_path: str, max_findings: int = 10):
         print("-" * 60)
         for s in recs:
             print(f"  {s}")
-    print(f"  ▶ See full report: {json_path}")
+    print(f"  \u25b6 See full report: {json_path}")
 
 
 def main():
+    """Main entry point.
+
+    1. Load .env
+    2. Validate SHINE_API_KEY
+    3. Parse CLI args
+    4. For each target: create ReconOrchestrator, run, print summary
+
+    Current limitation: sequential targets (--threads parsed but not parallel).
+    """
     load_dotenv()
     args = parse_args()
 
