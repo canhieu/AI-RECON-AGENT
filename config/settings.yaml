@@ -1,0 +1,31 @@
+# AI Recon Agent — Settings
+# Skills are user-provided; core engine uses this config.
+
+general:
+  name: ai-recon-agent
+  version: 0.1.0
+
+executor:
+  default_timeout: 120
+  max_output_chars: 5000
+  delay_between_tools_ms: 500
+  retry_on_error: true
+  max_retries: 2
+
+orchestrator:
+  max_steps_default: 100
+  max_context_tokens: 32000  # 80% of model limit
+  recent_findings_in_context: 5
+  model_decision: codex/gpt5.5
+  model_analysis: codex/gpt-5.4-mini
+  model_report: codex/gpt5.5
+  temperature_decision: 0.0
+  temperature_analysis: 0.0
+  temperature_report: 0.3
+
+state:
+  db_path: outputs/{target}/recon.db
+
+reporter:
+  output_dir: outputs/{target}/
+  screenshot: false  # requires chromium
