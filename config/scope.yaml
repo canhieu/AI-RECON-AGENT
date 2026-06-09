@@ -7,9 +7,26 @@ allowed_targets:
   # - example.com
   # - 10.10.10.0/24
 
+blocked_targets:
+  # Internal/Link-local ranges — NEVER remove
+  - 127.0.0.0/8
+  - 169.254.0.0/16
+  - 0.0.0.0/8
+  - 10.0.0.0/8
+  - 172.16.0.0/12
+  - 192.168.0.0/16
+  - 100.64.0.0/10
+  - 224.0.0.0/4
+  - 240.0.0.0/4
+
+  # Metadata endpoints (cloud providers)
+  - 169.254.169.254/32
+
+  # Add custom blocked targets here
+  # - competitor.com
 
 limits:
   max_rate: 100  # packets/second for masscan
   max_threads: 3  # parallel targets
-  allow_service_interaction: true  # set true to allow SMB/FTP/MySQL checks
+  allow_service_interaction: false  # set true to allow SMB/FTP/MySQL checks
   allow_active_scan: true
