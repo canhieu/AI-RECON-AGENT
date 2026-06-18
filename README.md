@@ -46,7 +46,6 @@ ai-recon-agent/
 │   └── SETUP.md
 ├── benchmarks/
 │   └── MANUAL-BENCHMARK-GUIDE.md
-├── learning/                    Vietnamese training docs
 ├── outputs/                     Session DB, logs, artifacts, reports
 ├── AGENT.md                     System prompt / behavior rules
 ├── RTK.md                       RTK token-savings usage notes
