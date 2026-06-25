@@ -45,7 +45,7 @@ ai-recon-agent/
 │   ├── skills-reference.md
 │   └── SETUP.md
 ├── benchmarks/
-│   └── MANUAL-BENCHMARK-GUIDE.md
+│   
 ├── outputs/                     Session DB, logs, artifacts, reports
 ├── AGENT.md                     System prompt / behavior rules
 ├── RTK.md                       RTK token-savings usage notes
