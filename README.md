@@ -348,12 +348,7 @@ Key format: `"{tool}|{target}|{sorted_params_json}"`
 ---
 
 ## Benchmark
-
-See `benchmarks/MANUAL-BENCHMARK-GUIDE.md` for the manual benchmark framework:
-- Define expected evidence per case
-- Run agent → compare → score (100-point rubric)
-- Record failure root cause → generalize fix into code/skills
-- After 3–5 cases stabilize, automate with `run_benchmark.py`
+...........
 
 ---
 
