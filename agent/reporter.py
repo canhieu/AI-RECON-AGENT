@@ -29,9 +29,9 @@ class Reporter:
         md_path = os.path.join(self.output_dir, "recon-report.md")
         json_path = os.path.join(self.output_dir, "recon-report.json")
 
-        with open(md_path, "w") as f:
+        with open(md_path, "w", encoding="utf-8") as f:
             f.write(markdown)
-        with open(json_path, "w") as f:
+        with open(json_path, "w", encoding="utf-8") as f:
             json.dump(json_data, f, indent=2)
 
         return {"markdown": md_path, "json": json_path}
