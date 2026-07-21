@@ -38,14 +38,24 @@ ai-recon-agent/
 │   ├── settings.yaml            Runtime config (LLM models, timeouts)
 │   └── scope.yaml               Scope policy — NOT ENFORCED yet
 ├── data/                        Fallback wordlists
-├── docs/
-│   ├── WORKFLOW.md              Current runtime workflow reference
+├── docs/                        Architecture docs (see wtf/ for up-to-date)
+│   ├── WORKFLOW.md
 │   ├── ARCHITECTURE-WORKFLOW.md
-│   ├── decision-tree.md         Full decision tree diagrams
+│   ├── decision-tree.md
 │   ├── skills-reference.md
 │   └── SETUP.md
+├── wtf/                          Current source-accurate workflow
+│   ├── view.html                 Open in browser: all 6 flowcharts
+│   ├── 01-main-loop.mmd          Orchestrator main loop
+│   ├── 02-port-phase.mmd         PortWorker decision tree
+│   ├── 03-web-phase.mmd          WebWorker full chain
+│   ├── 04-service-phase.mmd      ServiceWorker port-to-tool
+│   ├── 05-post-execution.mmd     Post-execution hooks
+│   ├── 06-end-to-end.mmd         Compact tool order overview
+│   └── WORKFLOW.md               Detailed text reference
 ├── benchmarks/
-│   
+│   └── MANUAL-BENCHMARK-GUIDE.md
+├── learning/                    Vietnamese training docs
 ├── outputs/                     Session DB, logs, artifacts, reports
 ├── AGENT.md                     System prompt / behavior rules
 ├── RTK.md                       RTK token-savings usage notes
@@ -59,7 +69,7 @@ ai-recon-agent/
 ## Quick Start
 
 ```bash
-cp .env.example .env   # add SHINE_API_KEY
+cp .env.example .env   
 pip install -r requirements.txt
 AI_RECON_TUI=0 python3 agent/main.py --target scanme.nmap.org --max-steps 25 --verbose
 ```
@@ -226,7 +236,7 @@ outputs/{target}/
 | `ffuf_recursive` | Recursive directory fuzzing |
 | `ffuf_ext` | Extension-based file fuzzing |
 
-### Service Checks (12)
+### Service Checks (15)
 
 | Tool | Port(s) |
 |------|---------|
@@ -234,14 +244,17 @@ outputs/{target}/
 | `ssh_check` | 22 |
 | `smtp_check` | 25, 465, 587 |
 | `dns_check` | 53 |
-| `snmp_check` | 161 (not registered yet) |
+| `snmp_check` | 161 |
 | `smb_check` | 139, 445 |
 | `ldap_check` | 389, 636 |
+| `nfs_check` | 111, 2049 |
 | `mssql_check` | 1433 |
-| `nfs_check` | 2049 |
 | `mysql_check` | 3306 |
-| `redis_check` | 6379 |
+| `rdp_check` | 3389 |
+| `postgres_check` | 5432 |
 | `vnc_check` | 5900, 5901 |
+| `redis_check` | 6379 |
+| `mongo_check` | 27017 |
 
 ### Web Expansion (27)
 
@@ -295,9 +308,11 @@ executor:
 
 orchestrator:
   max_steps_default: 100
+  max_context_tokens: 32000
   recent_findings_in_context: 5
-  model_decision: codex/gpt5.5        # LLM (legacy, unused)
-  model_analysis: codex/gpt-5.4-mini  # LLM for analysis
+  model_decision: gpt-5.6-terra      # Fast: tool selection (legacy, unused)
+  model_analysis: gpt-5.6-sol        # Powerful: output analysis
+  model_report: gpt-5.5              # Base model: report writing
   temperature_decision: 0.0
   temperature_analysis: 0.0
   temperature_report: 0.3
@@ -312,9 +327,20 @@ reporter:
 ### `.env`
 
 ```bash
-SHINE_API_KEY=sk-...
+SHINE_API_KEY=RwMrrQAox0...         # Required: ShineShop API key
 SHINE_BASE_URL=https://api.shineshop.dev/v1
+SHINE_MODEL=gpt-5.6-sol             # Optional: override analysis model
+SHINE_MODEL_CHEAP=gpt-5.6-terra     # Optional: override decision model
+
+# Optional: Shodan for OSINT
+SHODAN_API_KEY=...
+
+# Optional: Dehashed for credential search
+DEHASHED_API_KEY=
+DEHASHED_EMAIL=
 ```
+
+> **Note:** The OpenAI client uses `default_headers={"User-Agent": "curl/8.0"}` to bypass API proxy blocking of the default Python User-Agent.
 
 ---
 
@@ -337,18 +363,23 @@ Key format: `"{tool}|{target}|{sorted_params_json}"`
 
 | Issue | Status |
 |-------|--------|
-| `ServiceWorker.PORT_TO_CHECK` references unregistered tools | `rdp_check`, `postgres_check`, `mongo_check` not registered |
-| `snmp_check` not mapped for port 161 | Missing in `PORT_TO_CHECK` |
+| `snmp_check` not in `ServiceWorker.PORT_TO_CHECK` for port 161 | Mapped in registry but not auto-triggered |
 | Multi-web-target scheduling | Only handles `web_targets[0]` |
 | `--threads` / `--output` CLI flags | Parsed but not wired |
 | `scope.yaml` not enforced | No runtime scope filtering |
 | Stale `_llm_decision` / `_build_decision_prompt` code in orchestrator | Unused, preserved as reference |
 | `generate_report` branch in `run()` | Legacy guard, workers always drive now |
+| No `--passive-only` guard in WebWorker | Nuclei/tool chains not gated on passive-only flag |
 
 ---
 
 ## Benchmark
-...........
+
+See `benchmarks/MANUAL-BENCHMARK-GUIDE.md` for the manual benchmark framework:
+- Define expected evidence per case
+- Run agent → compare → score (100-point rubric)
+- Record failure root cause → generalize fix into code/skills
+- After 3–5 cases stabilize, automate with `run_benchmark.py`
 
 ---
 
