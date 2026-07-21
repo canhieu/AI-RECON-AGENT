@@ -106,6 +106,8 @@ python agent/main.py --targets targets.txt
 <img width="1902" height="827" alt="image" src="https://github.com/user-attachments/assets/a0f08915-fc45-47be-866c-a5deffcc5a67" />
 
 
+<img width="1890" height="752" alt="image" src="https://github.com/user-attachments/assets/9cbcdef4-5b54-474f-b2b6-683cac6581b3" />
+
 ---
 
 ## Nó làm gì?
