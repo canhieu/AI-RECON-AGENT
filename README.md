@@ -103,6 +103,8 @@ python agent/main.py --target 10.10.10.42 --resume abc123def456
 # Nhiều target (sequential)
 python agent/main.py --targets targets.txt
 ```
+<img width="1902" height="827" alt="image" src="https://github.com/user-attachments/assets/a0f08915-fc45-47be-866c-a5deffcc5a67" />
+
 
 ---
 
