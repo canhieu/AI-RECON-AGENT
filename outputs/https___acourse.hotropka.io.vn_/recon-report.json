@@ -1,0 +1,251 @@
+{
+  "target": "https://acourse.hotropka.io.vn/",
+  "generated_at": "2026-07-21T11:10:26.447779",
+  "summary": {
+    "total": 30,
+    "by_severity": {
+      "critical": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 0,
+      "info": 30
+    },
+    "tech_stack": "Sale ",
+    "ports": [
+      "80/http",
+      "443/ssl/https"
+    ]
+  },
+  "findings": [
+    {
+      "severity": "info",
+      "tool": "nmap",
+      "summary": "Ran nmap on acourse.hotropka.io.vn",
+      "evidence": "Starting Nmap 7.99 ( https://nmap.org ) at 2026-07-21 11:07 +0700\nStats: 0:00:00 elapsed; 0 hosts completed (0 up), 0 undergoing Script Pre-Scan\nNSE Timing: About 0.00% done\nStats: 0:00:00 elapsed; 0 hosts completed (0 up), 0 undergoing Host Discovery\nParallel DNS resolution of 1 host. Timing: About 0.00% done\nNmap scan report for acourse.hotropka.io.vn (216.198.79.1)\nHost is up (0.026s latency).\nOther addresses for acourse.hotropka.io.vn (not scanned): 64.29.17.1\nNot shown: 112 filtered tcp por",
+      "created_at": "2026-07-21 04:09:26"
+    },
+    {
+      "severity": "info",
+      "tool": "whois",
+      "summary": "Ran whois on acourse.hotropka.io.vn",
+      "evidence": "This TLD has no whois server, but you can access the whois database at\nhttp://www.vnnic.vn/en\n",
+      "created_at": "2026-07-21 04:09:27"
+    },
+    {
+      "severity": "info",
+      "tool": "dig",
+      "summary": "Ran dig on acourse.hotropka.io.vn",
+      "evidence": "\n; <<>> DiG 9.20.23-1-Debian <<>> acourse.hotropka.io.vn A +time=5\n;; global options: +cmd\n;; Got answer:\n;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 28560\n;; flags: qr rd ra; QUERY: 1, ANSWER: 3, AUTHORITY: 0, ADDITIONAL: 1\n\n;; OPT PSEUDOSECTION:\n; EDNS: version: 0, flags:; udp: 1232\n;; QUESTION SECTION:\n;acourse.hotropka.io.vn.\t\tIN\tA\n\n;; ANSWER SECTION:\nacourse.hotropka.io.vn.\t1003\tIN\tCNAME\t143c62efbb8a0e0b.vercel-dns-017.com.\n143c62efbb8a0e0b.vercel-dns-017.com. 1003 IN A\t64.29.17.1\n1",
+      "created_at": "2026-07-21 04:09:29"
+    },
+    {
+      "severity": "info",
+      "tool": "crt_sh",
+      "summary": "Ran crt_sh on acourse.hotropka.io.vn",
+      "evidence": "<html>\n<head><title>502 Bad Gateway</title></head>\n<body>\n<center><h1>502 Bad Gateway</h1></center>\n<hr><center>nginx</center>\n</body>\n</html>\n",
+      "created_at": "2026-07-21 04:09:31"
+    },
+    {
+      "severity": "info",
+      "tool": "subfinder",
+      "summary": "Ran subfinder on acourse.hotropka.io.vn",
+      "evidence": "",
+      "created_at": "2026-07-21 04:09:32"
+    },
+    {
+      "severity": "info",
+      "tool": "dnsx",
+      "summary": "Ran dnsx on acourse.hotropka.io.vn",
+      "evidence": "sh: 1: dnsx: not found",
+      "created_at": "2026-07-21 04:09:33"
+    },
+    {
+      "severity": "info",
+      "tool": "theharvester",
+      "summary": "Ran theharvester on acourse.hotropka.io.vn",
+      "evidence": "",
+      "created_at": "2026-07-21 04:09:35"
+    },
+    {
+      "severity": "info",
+      "tool": "whatweb",
+      "summary": "Ran whatweb on http://acourse.hotropka.io.vn",
+      "evidence": "",
+      "created_at": "2026-07-21 04:09:36"
+    },
+    {
+      "severity": "info",
+      "tool": "redirect_check",
+      "summary": "Ran redirect_check on http://acourse.hotropka.io.vn",
+      "evidence": "REDIRECT:https://acourse.hotropka.io.vn/\n",
+      "created_at": "2026-07-21 04:09:38"
+    },
+    {
+      "severity": "info",
+      "tool": "redirect_target",
+      "summary": "Switch web target to redirect domain: https://acourse.hotropka.io.vn",
+      "evidence": "",
+      "created_at": "2026-07-21 04:09:38"
+    },
+    {
+      "severity": "info",
+      "tool": "ffuf_vhost",
+      "summary": "Ran ffuf_vhost on https://acourse.hotropka.io.vn",
+      "evidence": "",
+      "created_at": "2026-07-21 04:09:39"
+    },
+    {
+      "severity": "info",
+      "tool": "httpx",
+      "summary": "Ran httpx on https://acourse.hotropka.io.vn",
+      "evidence": "",
+      "created_at": "2026-07-21 04:09:40"
+    },
+    {
+      "severity": "info",
+      "tool": "curl_headers",
+      "summary": "Ran curl_headers on https://acourse.hotropka.io.vn",
+      "evidence": "HTTP/2 200 \nage: 22\ncache-control: public, max-age=0, must-revalidate\ncontent-type: text/html; charset=utf-8\ndate: Tue, 21 Jul 2026 04:11:33 GMT\netag: \"unkyj70o6v4inj\"\nserver: Vercel\nstrict-transport-security: max-age=63072000\nvary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch\nx-matched-path: /\nx-nextjs-prerender: 1\nx-nextjs-stale-time: 300\nx-powered-by: Next.js\nx-vercel-cache: HIT\nx-vercel-id: hkg1::iad1::w8drp-1784607115911-fbf4fad2a3a2\ncontent-length: 215959",
+      "created_at": "2026-07-21 04:09:42"
+    },
+    {
+      "severity": "info",
+      "tool": "cms_detect",
+      "summary": "Ran cms_detect on https://acourse.hotropka.io.vn",
+      "evidence": "{\"cms\": [{\"confidence\": \"medium\", \"evidence\": [\"asset: https://i.ibb.co/Xr29cGMC/logo-Sale-Noti.png\"], \"method\": \"generic_inference\", \"name\": \"Sale\", \"version\": \"\"}], \"frameworks\": [], \"interesting_paths\": [], \"root_url\": \"https://acourse.hotropka.io.vn/\", \"target\": \"https://acourse.hotropka.io.vn\", \"tech_discovered\": [{\"confidence\": \"medium\", \"evidence\": [\"asset: https://i.ibb.co/Xr29cGMC/logo-Sale-Noti.png\"], \"method\": \"generic_inference\", \"name\": \"Sale\", \"version\": \"\"}]}\n",
+      "created_at": "2026-07-21 04:09:50"
+    },
+    {
+      "severity": "info",
+      "tool": "cms_detect",
+      "summary": "CMS/framework detected: Sale",
+      "evidence": "asset: https://i.ibb.co/Xr29cGMC/logo-Sale-Noti.png",
+      "created_at": "2026-07-21 04:09:50"
+    },
+    {
+      "severity": "info",
+      "tool": "katana",
+      "summary": "Ran katana on https://acourse.hotropka.io.vn",
+      "evidence": "",
+      "created_at": "2026-07-21 04:09:51"
+    },
+    {
+      "severity": "info",
+      "tool": "js_dump",
+      "summary": "Ran js_dump on https://acourse.hotropka.io.vn",
+      "evidence": "{\"pages\": [\"https://acourse.hotropka.io.vn\", \"https://acourse.hotropka.io.vn\"], \"js_urls\": [\"https://acourse.hotropka.io.vn/_next/static/chunks/03~yq9q893hmn.js\", \"https://acourse.hotropka.io.vn/_next/static/chunks/05f6efelq9fg..js\", \"https://acourse.hotropka.io.vn/_next/static/chunks/092yhsu9y.ayb.js\", \"https://acourse.hotropka.io.vn/_next/static/chunks/0d3shmwh5_nmn.js\", \"https://acourse.hotropka.io.vn/_next/static/chunks/0kw7pxlfcjssu.js\", \"https://acourse.hotropka.io.vn/_next/static/chunks/0",
+      "created_at": "2026-07-21 04:09:58"
+    },
+    {
+      "severity": "info",
+      "tool": "js_deobfuscate",
+      "summary": "Ran js_deobfuscate on https://acourse.hotropka.io.vn",
+      "evidence": "{\"decoded\": [{\"file\": \"outputs/https___acourse.hotropka.io.vn_/artifacts/js/acourse.hotropka.io.vn__next_static_chunks_05f6efelq9fg..js.8e50830b.js\", \"encoding\": \"base64\", \"input\": \"reloadAndSetCurrentUserOrClear\", \"decoded\": \"hi'u'\\nz{T\\u03ac)^j\"}, {\"file\": \"outputs/https___acourse.hotropka.io.vn_/artifacts/js/acourse.hotropka.io.vn__next_static_chunks_05f6efelq9fg..js.8e50830b.js\", \"encoding\": \"base64\", \"input\": \"[REDACTED:long_base64]\", \"decoded\": \"\\u00",
+      "created_at": "2026-07-21 04:09:59"
+    },
+    {
+      "severity": "info",
+      "tool": "js_mine",
+      "summary": "Ran js_mine on https://acourse.hotropka.io.vn",
+      "evidence": "{\"endpoints\": [\"http://${n}\", \"http://localhost\", \"http://n\", \"http://online.gov.vn/Home/WebDetails/142677\", \"http://www.w3.org/1998/Math/MathML\", \"http://www.w3.org/1999/xlink\", \"http://www.w3.org/2000/svg\", \"http://www.w3.org/XML/1998/namespace\", \"https://${\", \"https://${e.authDomain}/__/auth/handler\", \"https://${e.config.authDomain}/__/auth/iframe\", \"https://a\", \"https://a#\\u0431\", \"https://a/c%20d?a=1&c=3\", \"https://a@b\", \"https://acourse.hotropka.io.vn/\", \"https://acourse.hotropka.io.vn/ROO",
+      "created_at": "2026-07-21 04:10:02"
+    },
+    {
+      "severity": "info",
+      "tool": "ffuf_dir",
+      "summary": "Ran ffuf_dir on https://acourse.hotropka.io.vn",
+      "evidence": "",
+      "created_at": "2026-07-21 04:10:04"
+    },
+    {
+      "severity": "info",
+      "tool": "ffuf_recursive",
+      "summary": "Ran ffuf_recursive on https://acourse.hotropka.io.vn",
+      "evidence": "",
+      "created_at": "2026-07-21 04:10:05"
+    },
+    {
+      "severity": "info",
+      "tool": "ffuf_ext",
+      "summary": "Ran ffuf_ext on https://acourse.hotropka.io.vn",
+      "evidence": "",
+      "created_at": "2026-07-21 04:10:07"
+    },
+    {
+      "severity": "info",
+      "tool": "cms_detect",
+      "summary": "Ran cms_detect on https://acourse.hotropka.io.vn",
+      "evidence": "{\"cms\": [{\"confidence\": \"medium\", \"evidence\": [\"asset: https://i.ibb.co/Xr29cGMC/logo-Sale-Noti.png\"], \"method\": \"generic_inference\", \"name\": \"Sale\", \"version\": \"\"}], \"frameworks\": [], \"interesting_paths\": [], \"root_url\": \"https://acourse.hotropka.io.vn/\", \"target\": \"https://acourse.hotropka.io.vn\", \"tech_discovered\": [{\"confidence\": \"medium\", \"evidence\": [\"asset: https://i.ibb.co/Xr29cGMC/logo-Sale-Noti.png\"], \"method\": \"generic_inference\", \"name\": \"Sale\", \"version\": \"\"}]}\n",
+      "created_at": "2026-07-21 04:10:16"
+    },
+    {
+      "severity": "info",
+      "tool": "cms_detect",
+      "summary": "CMS/framework detected: Sale",
+      "evidence": "asset: https://i.ibb.co/Xr29cGMC/logo-Sale-Noti.png",
+      "created_at": "2026-07-21 04:10:16"
+    },
+    {
+      "severity": "info",
+      "tool": "web_download_interesting",
+      "summary": "Ran web_download_interesting on https://acourse.hotropka.io.vn/mnt/c/Users/PC-",
+      "evidence": "{\"artifacts\": [], \"skipped\": \"not interesting\", \"score\": 0}\n",
+      "created_at": "2026-07-21 04:10:17"
+    },
+    {
+      "severity": "info",
+      "tool": "curl_body",
+      "summary": "Ran curl_body on https://acourse.hotropka.io.vn/mnt/c/Users/PC-",
+      "evidence": "<!DOCTYPE html><html lang=\"en\" data-astro-cid-nbv56vs3> <head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><meta name=\"theme-color\" content=\"#000\"><title>Vercel Security Checkpoint</title><style>.spinner[data-astro-cid-jlpqxutv]{display:flex;flex-direction:column;justify-content:center;align-items:center}.spinner-circle[data-astro-cid-jlpqxutv]{transform-origin:center;animation:spinner-circle-animate 1s step-start infinite}rect[data-astro-cid-jlpqxutv",
+      "created_at": "2026-07-21 04:10:19"
+    },
+    {
+      "severity": "info",
+      "tool": "arjun",
+      "summary": "Ran arjun on https://acourse.hotropka.io.vn",
+      "evidence": "{}",
+      "created_at": "2026-07-21 04:10:21"
+    },
+    {
+      "severity": "info",
+      "tool": "subdomain_live",
+      "summary": "Ran subdomain_live on acourse.hotropka.io.vn",
+      "evidence": "sh: 1: subfinder: not found\nUsage: httpx [OPTIONS] URL\n\nError: No such option '-s'.",
+      "created_at": "2026-07-21 04:10:22"
+    },
+    {
+      "severity": "info",
+      "tool": "nuclei_smart",
+      "summary": "Ran nuclei_smart on https://acourse.hotropka.io.vn",
+      "evidence": "",
+      "created_at": "2026-07-21 04:10:23"
+    },
+    {
+      "severity": "info",
+      "tool": "nuclei_cve",
+      "summary": "Ran nuclei_cve on https://acourse.hotropka.io.vn",
+      "evidence": "",
+      "created_at": "2026-07-21 04:10:25"
+    }
+  ],
+  "artifacts": [],
+  "attack_leads": [
+    {
+      "severity": "medium",
+      "summary": "CMS/technology found; check public CVEs, admin panels, exposed modules, and login surfaces."
+    },
+    {
+      "severity": "medium",
+      "summary": "API endpoints discovered; probe for parameter injection, IDOR, excessive data exposure, and missing auth."
+    },
+    {
+      "severity": "high",
+      "summary": "LLM analysis suggests specific vulnerability classes present; prioritize targeted testing based on identified classes."
+    }
+  ],
+  "recommendations": [
+    "\u25b6 Tech stack detected \u2014 check CVEs per version",
+    "\u25b6 Run nuclei_smart + nuclei_cve with matching CVE templates",
+    "\u25b6 Re-run with --verbose for detailed output"
+  ]
+}
