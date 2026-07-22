@@ -1,0 +1,254 @@
+AI Recon Agent live activity
+11:07:28 Session start
+11:07:28 Agents ready: Port Agent, Web Agent, Service Agent, Report Agent
+11:07:29 RTK token savings: unavailable (rtk not found)
+11:07:29 Step 1/50: decide next tool
+11:07:29 Port Agent: running nmap
+11:07:29 Run nmap -> acourse.hotropka.io.vn
+11:09:25 nmap: OK (115.94s)
+ANALYSIS nmap [info]: Ran nmap on acourse.hotropka.io.vn | evidence=Starting Nmap 7.99 ( https://nmap.org ) at 2026-07-21 11:07 +0700 | Stats: 0:00:00 elapsed; 0 hosts completed (0 up), 0 undergoing Script Pre-Scan | NSE Timing: About 0.00% done | Stats: 0:00:00 elapsed; 0 hosts completed (0 up), 0 undergoi
+11:09:26 Analysis nmap: [INFO] Ran nmap on acourse.hotropka.io.vn
+FINDING [INFO] Ran nmap on acourse.hotropka.io.vn
+11:09:26 Save finding [INFO]
+11:09:26 Step 2/50: decide next tool
+11:09:26 Port Agent: done
+11:09:26 Web Agent: running whois
+11:09:26 Run whois -> acourse.hotropka.io.vn
+11:09:26 whois: FAIL (0.03s)
+ANALYSIS whois [info]: Ran whois on acourse.hotropka.io.vn | evidence=This TLD has no whois server, but you can access the whois database at | http://www.vnnic.vn/en | 
+11:09:27 Analysis whois: [INFO] Ran whois on acourse.hotropka.io.vn
+FINDING [INFO] Ran whois on acourse.hotropka.io.vn
+11:09:27 Save finding [INFO]
+11:09:27 Step 3/50: decide next tool
+11:09:27 Web Agent: running dig
+11:09:27 Run dig -> acourse.hotropka.io.vn
+11:09:28 dig: OK (0.15s)
+ANALYSIS dig [info]: Ran dig on acourse.hotropka.io.vn | evidence= | ; <<>> DiG 9.20.23-1-Debian <<>> acourse.hotropka.io.vn A +time=5 | ;; global options: +cmd | ;; Got answer: | ;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 28560 | ;; flags: qr rd ra; QUERY: 1, ANSWER: 3, AUTHORITY: 0, ADDITIONAL:
+11:09:29 Analysis dig: [INFO] Ran dig on acourse.hotropka.io.vn
+FINDING [INFO] Ran dig on acourse.hotropka.io.vn
+11:09:29 Save finding [INFO]
+11:09:29 Step 4/50: decide next tool
+11:09:29 Web Agent: running crt_sh
+11:09:29 Run crt_sh -> acourse.hotropka.io.vn
+11:09:31 crt_sh: OK (1.15s)
+ANALYSIS crt_sh [info]: Ran crt_sh on acourse.hotropka.io.vn | evidence=<html> | <head><title>502 Bad Gateway</title></head> | <body> | <center><h1>502 Bad Gateway</h1></center> | <hr><center>nginx</center> | </body> | </html> | 
+11:09:31 Analysis crt_sh: [INFO] Ran crt_sh on acourse.hotropka.io.vn
+FINDING [INFO] Ran crt_sh on acourse.hotropka.io.vn
+11:09:31 Save finding [INFO]
+11:09:32 Step 5/50: decide next tool
+11:09:32 Web Agent: running subfinder
+11:09:32 Run subfinder -> acourse.hotropka.io.vn
+11:09:32 subfinder: FAIL (0.05462217330932617s)
+ANALYSIS subfinder [info]: Ran subfinder on acourse.hotropka.io.vn
+11:09:32 Analysis subfinder: [INFO] Ran subfinder on acourse.hotropka.io.vn
+FINDING [INFO] Ran subfinder on acourse.hotropka.io.vn
+11:09:32 Save finding [INFO]
+11:09:33 Step 6/50: decide next tool
+11:09:33 Web Agent: running dnsx
+11:09:33 Run dnsx -> acourse.hotropka.io.vn
+11:09:33 dnsx: FAIL (0.09s)
+ANALYSIS dnsx [info]: Ran dnsx on acourse.hotropka.io.vn | evidence=sh: 1: dnsx: not found
+11:09:33 Analysis dnsx: [INFO] Ran dnsx on acourse.hotropka.io.vn
+FINDING [INFO] Ran dnsx on acourse.hotropka.io.vn
+11:09:33 Save finding [INFO]
+11:09:34 Step 7/50: decide next tool
+11:09:34 Web Agent: running theharvester
+11:09:34 Run theharvester -> acourse.hotropka.io.vn
+11:09:34 theharvester: FAIL (0.04484915733337402s)
+ANALYSIS theharvester [info]: Ran theharvester on acourse.hotropka.io.vn
+11:09:35 Analysis theharvester: [INFO] Ran theharvester on acourse.hotropka.io.vn
+FINDING [INFO] Ran theharvester on acourse.hotropka.io.vn
+11:09:35 Save finding [INFO]
+11:09:35 Step 8/50: decide next tool
+11:09:35 Web Agent: running whatweb
+11:09:35 Run whatweb -> http://acourse.hotropka.io.vn
+11:09:36 whatweb: OK (0.05s)
+ANALYSIS whatweb [info]: Ran whatweb on http://acourse.hotropka.io.vn
+11:09:36 Analysis whatweb: [INFO] Ran whatweb on http://acourse.hotropka.io.vn
+FINDING [INFO] Ran whatweb on http://acourse.hotropka.io.vn
+11:09:36 Save finding [INFO]
+11:09:36 Step 9/50: decide next tool
+11:09:37 Web Agent: running redirect_check
+11:09:37 Run redirect_check -> http://acourse.hotropka.io.vn
+11:09:37 redirect_check: OK (0.67s)
+ANALYSIS redirect_check [info]: Ran redirect_check on http://acourse.hotropka.io.vn | evidence=REDIRECT:https://acourse.hotropka.io.vn/ | 
+11:09:38 Analysis redirect_check: [INFO] Ran redirect_check on http://acourse.hotropka.io.vn
+FINDING [INFO] Ran redirect_check on http://acourse.hotropka.io.vn
+11:09:38 Save finding [INFO]
+11:09:38 Step 10/50: decide next tool
+11:09:38 Web Agent: running ffuf_vhost
+11:09:38 Run ffuf_vhost -> https://acourse.hotropka.io.vn
+11:09:38 ffuf_vhost: FAIL (0.24s)
+ANALYSIS ffuf_vhost [info]: Ran ffuf_vhost on https://acourse.hotropka.io.vn | evidence=Traceback (most recent call last): |   File "/mnt/c/Users/PC- Thanh/Downloads/ppppp/agent/skills/boot2root-recon/scripts/adaptive_ffuf.py", line 150, in <module> |     raise SystemExit(main()) |                      ^^^^^^ |   File "/mnt/c/
+11:09:39 Analysis ffuf_vhost: [INFO] Ran ffuf_vhost on https://acourse.hotropka.io.vn
+FINDING [INFO] Ran ffuf_vhost on https://acourse.hotropka.io.vn
+11:09:39 Save finding [INFO]
+11:09:39 Step 11/50: decide next tool
+11:09:40 Web Agent: running httpx
+11:09:40 Run httpx -> https://acourse.hotropka.io.vn
+11:09:40 httpx: FAIL (0.01s)
+ANALYSIS httpx [info]: Ran httpx on https://acourse.hotropka.io.vn
+11:09:40 Analysis httpx: [INFO] Ran httpx on https://acourse.hotropka.io.vn
+FINDING [INFO] Ran httpx on https://acourse.hotropka.io.vn
+11:09:40 Save finding [INFO]
+11:09:41 Step 12/50: decide next tool
+11:09:41 Web Agent: running curl_headers
+11:09:41 Run curl_headers -> https://acourse.hotropka.io.vn
+11:09:41 curl_headers: OK (0.25s)
+ANALYSIS curl_headers [info]: Ran curl_headers on https://acourse.hotropka.io.vn | evidence=HTTP/2 200  | age: 22 | cache-control: public, max-age=0, must-revalidate | content-type: text/html; charset=utf-8 | date: Tue, 21 Jul 2026 04:11:33 GMT | etag: "unkyj70o6v4inj" | server: Vercel | strict-transport-security: max-age=63072000
+11:09:42 Analysis curl_headers: [INFO] Ran curl_headers on https://acourse.hotropka.io.vn
+FINDING [INFO] Ran curl_headers on https://acourse.hotropka.io.vn
+11:09:42 Save finding [INFO]
+11:09:42 Step 13/50: decide next tool
+11:09:42 Web Agent: running cms_detect
+11:09:42 Run cms_detect -> https://acourse.hotropka.io.vn
+11:09:49 cms_detect: OK (6.92s)
+ANALYSIS cms_detect [info]: Ran cms_detect on https://acourse.hotropka.io.vn | evidence={"cms": [{"confidence": "medium", "evidence": ["asset: https://i.ibb.co/Xr29cGMC/logo-Sale-Noti.png"], "method": "generic_inference", "name": "Sale", "version": ""}], "frameworks": [], "interesting_paths": [], "root_url": "https://acourse.h
+11:09:50 Analysis cms_detect: [INFO] Ran cms_detect on https://acourse.hotropka.io.vn
+FINDING [INFO] Ran cms_detect on https://acourse.hotropka.io.vn
+11:09:50 Save finding [INFO]
+FINDING [INFO] CMS/framework detected: Sale
+11:09:50 Save finding [INFO]
+11:09:51 Step 14/50: decide next tool
+11:09:51 Web Agent: running katana
+11:09:51 Run katana -> https://acourse.hotropka.io.vn
+11:09:51 katana: FAIL (0.044384002685546875s)
+ANALYSIS katana [info]: Ran katana on https://acourse.hotropka.io.vn
+11:09:51 Analysis katana: [INFO] Ran katana on https://acourse.hotropka.io.vn
+FINDING [INFO] Ran katana on https://acourse.hotropka.io.vn
+11:09:51 Save finding [INFO]
+11:09:52 Step 15/50: decide next tool
+11:09:52 Web Agent: running js_dump
+11:09:52 Run js_dump -> https://acourse.hotropka.io.vn
+11:09:57 js_dump: OK (5.5s)
+ANALYSIS js_dump [info]: Ran js_dump on https://acourse.hotropka.io.vn | evidence={"pages": ["https://acourse.hotropka.io.vn", "https://acourse.hotropka.io.vn"], "js_urls": ["https://acourse.hotropka.io.vn/_next/static/chunks/03~yq9q893hmn.js", "https://acourse.hotropka.io.vn/_next/static/chunks/05f6efelq9fg..js", "https
+11:09:58 Analysis js_dump: [INFO] Ran js_dump on https://acourse.hotropka.io.vn
+FINDING [INFO] Ran js_dump on https://acourse.hotropka.io.vn
+11:09:58 Save finding [INFO]
+11:09:58 Step 16/50: decide next tool
+11:09:59 Web Agent: running js_deobfuscate
+11:09:59 Run js_deobfuscate -> https://acourse.hotropka.io.vn
+11:09:59 js_deobfuscate: OK (0.42s)
+ANALYSIS js_deobfuscate [info]: Ran js_deobfuscate on https://acourse.hotropka.io.vn | evidence={"decoded": [{"file": "outputs/https___acourse.hotropka.io.vn_/artifacts/js/acourse.hotropka.io.vn__next_static_chunks_05f6efelq9fg..js.8e50830b.js", "encoding": "base64", "input": "reloadAndSetCurrentUserOrClear", "decoded": "hi'u'\nz{T\u0
+11:09:59 Analysis js_deobfuscate: [INFO] Ran js_deobfuscate on https://acourse.hotropka.io.vn
+FINDING [INFO] Ran js_deobfuscate on https://acourse.hotropka.io.vn
+11:09:59 Save finding [INFO]
+11:10:00 Step 17/50: decide next tool
+11:10:00 Web Agent: running js_mine
+11:10:00 Run js_mine -> https://acourse.hotropka.io.vn
+11:10:00 js_mine: OK (0.42s)
+ANALYSIS js_mine [info]: Ran js_mine on https://acourse.hotropka.io.vn | evidence={"endpoints": ["http://${n}", "http://localhost", "http://n", "http://online.gov.vn/Home/WebDetails/142677", "http://www.w3.org/1998/Math/MathML", "http://www.w3.org/1999/xlink", "http://www.w3.org/2000/svg", "http://www.w3.org/XML/1998/nam
+11:10:02 Analysis js_mine: [INFO] Ran js_mine on https://acourse.hotropka.io.vn
+FINDING [INFO] Ran js_mine on https://acourse.hotropka.io.vn
+11:10:02 Save finding [INFO]
+11:10:03 Step 18/50: decide next tool
+11:10:03 Web Agent: running ffuf_dir
+11:10:03 Run ffuf_dir -> https://acourse.hotropka.io.vn
+11:10:03 ffuf_dir: FAIL (0.23s)
+ANALYSIS ffuf_dir [info]: Ran ffuf_dir on https://acourse.hotropka.io.vn | evidence=Traceback (most recent call last): |   File "/mnt/c/Users/PC- Thanh/Downloads/ppppp/agent/skills/boot2root-recon/scripts/adaptive_ffuf.py", line 150, in <module> |     raise SystemExit(main()) |                      ^^^^^^ |   File "/mnt/c/
+11:10:03 Analysis ffuf_dir: [INFO] Ran ffuf_dir on https://acourse.hotropka.io.vn
+FINDING [INFO] Ran ffuf_dir on https://acourse.hotropka.io.vn
+11:10:04 Save finding [INFO]
+11:10:04 Step 19/50: decide next tool
+11:10:04 Web Agent: running ffuf_recursive
+11:10:04 Run ffuf_recursive -> https://acourse.hotropka.io.vn
+11:10:05 ffuf_recursive: FAIL (0.24s)
+ANALYSIS ffuf_recursive [info]: Ran ffuf_recursive on https://acourse.hotropka.io.vn | evidence=Traceback (most recent call last): |   File "/mnt/c/Users/PC- Thanh/Downloads/ppppp/agent/skills/boot2root-recon/scripts/adaptive_ffuf.py", line 150, in <module> |     raise SystemExit(main()) |                      ^^^^^^ |   File "/mnt/c/
+11:10:05 Analysis ffuf_recursive: [INFO] Ran ffuf_recursive on https://acourse.hotropka.io.vn
+FINDING [INFO] Ran ffuf_recursive on https://acourse.hotropka.io.vn
+11:10:05 Save finding [INFO]
+11:10:06 Step 20/50: decide next tool
+11:10:06 Web Agent: running ffuf_ext
+11:10:06 Run ffuf_ext -> https://acourse.hotropka.io.vn
+11:10:06 ffuf_ext: FAIL (0.21s)
+ANALYSIS ffuf_ext [info]: Ran ffuf_ext on https://acourse.hotropka.io.vn | evidence=Traceback (most recent call last): |   File "/mnt/c/Users/PC- Thanh/Downloads/ppppp/agent/skills/boot2root-recon/scripts/adaptive_ffuf.py", line 150, in <module> |     raise SystemExit(main()) |                      ^^^^^^ |   File "/mnt/c/
+11:10:07 Analysis ffuf_ext: [INFO] Ran ffuf_ext on https://acourse.hotropka.io.vn
+FINDING [INFO] Ran ffuf_ext on https://acourse.hotropka.io.vn
+11:10:07 Save finding [INFO]
+11:10:07 Step 21/50: decide next tool
+11:10:07 Web Agent: running cms_detect
+11:10:07 Run cms_detect -> https://acourse.hotropka.io.vn
+11:10:15 cms_detect: OK (8.01s)
+ANALYSIS cms_detect [info]: Ran cms_detect on https://acourse.hotropka.io.vn | evidence={"cms": [{"confidence": "medium", "evidence": ["asset: https://i.ibb.co/Xr29cGMC/logo-Sale-Noti.png"], "method": "generic_inference", "name": "Sale", "version": ""}], "frameworks": [], "interesting_paths": [], "root_url": "https://acourse.h
+11:10:16 Analysis cms_detect: [INFO] Ran cms_detect on https://acourse.hotropka.io.vn
+FINDING [INFO] Ran cms_detect on https://acourse.hotropka.io.vn
+11:10:16 Save finding [INFO]
+FINDING [INFO] CMS/framework detected: Sale
+11:10:16 Save finding [INFO]
+11:10:16 Step 22/50: decide next tool
+11:10:17 Web Agent: running web_download_interesting
+11:10:17 Run web_download_interesting -> https://acourse.hotropka.io.vn/mnt/c/Users/PC-
+11:10:17 web_download_interesting: OK (0.26s)
+ANALYSIS web_download_interesting [info]: Ran web_download_interesting on https://acourse.hotropka.io.vn/mnt/c/Users/PC- | evidence={"artifacts": [], "skipped": "not interesting", "score": 0} | 
+11:10:17 Analysis web_download_interesting: [INFO] Ran web_download_interesting on https://acourse.hotropka.io.vn/mnt/c/Users/PC-
+FINDING [INFO] Ran web_download_interesting on https://acourse.hotropka.io.vn/mnt/c/Users/PC-
+11:10:17 Save finding [INFO]
+11:10:18 Step 23/50: decide next tool
+11:10:18 Web Agent: running curl_body
+11:10:18 Run curl_body -> https://acourse.hotropka.io.vn/mnt/c/Users/PC-
+11:10:18 curl_body: OK (0.24s)
+ANALYSIS curl_body [info]: Ran curl_body on https://acourse.hotropka.io.vn/mnt/c/Users/PC- | evidence=<!DOCTYPE html><html lang="en" data-astro-cid-nbv56vs3> <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#000"><title>Vercel Security Checkpoint</title><style>
+11:10:19 Analysis curl_body: [INFO] Ran curl_body on https://acourse.hotropka.io.vn/mnt/c/Users/PC-
+FINDING [INFO] Ran curl_body on https://acourse.hotropka.io.vn/mnt/c/Users/PC-
+11:10:19 Save finding [INFO]
+11:10:19 Step 24/50: decide next tool
+11:10:19 Web Agent: running arjun
+11:10:19 Run arjun -> https://acourse.hotropka.io.vn
+11:10:20 arjun: OK (0.05s)
+ANALYSIS arjun [info]: Ran arjun on https://acourse.hotropka.io.vn | evidence={}
+11:10:21 Analysis arjun: [INFO] Ran arjun on https://acourse.hotropka.io.vn
+FINDING [INFO] Ran arjun on https://acourse.hotropka.io.vn
+11:10:21 Save finding [INFO]
+11:10:21 Step 25/50: decide next tool
+11:10:21 Web Agent: running subdomain_live
+11:10:21 Run subdomain_live -> acourse.hotropka.io.vn
+11:10:22 subdomain_live: FAIL (0.19s)
+ANALYSIS subdomain_live [info]: Ran subdomain_live on acourse.hotropka.io.vn | evidence=sh: 1: subfinder: not found | Usage: httpx [OPTIONS] URL |  | Error: No such option '-s'.
+11:10:22 Analysis subdomain_live: [INFO] Ran subdomain_live on acourse.hotropka.io.vn
+FINDING [INFO] Ran subdomain_live on acourse.hotropka.io.vn
+11:10:22 Save finding [INFO]
+11:10:23 Step 26/50: decide next tool
+11:10:23 Web Agent: running nuclei_smart
+11:10:23 Run nuclei_smart -> https://acourse.hotropka.io.vn
+11:10:23 nuclei_smart: FAIL (0.04943060874938965s)
+ANALYSIS nuclei_smart [info]: Ran nuclei_smart on https://acourse.hotropka.io.vn
+11:10:23 Analysis nuclei_smart: [INFO] Ran nuclei_smart on https://acourse.hotropka.io.vn
+FINDING [INFO] Ran nuclei_smart on https://acourse.hotropka.io.vn
+11:10:23 Save finding [INFO]
+11:10:24 Step 27/50: decide next tool
+11:10:24 Web Agent: running nuclei_cve
+11:10:24 Run nuclei_cve -> https://acourse.hotropka.io.vn
+11:10:24 nuclei_cve: FAIL (0.03960251808166504s)
+ANALYSIS nuclei_cve [info]: Ran nuclei_cve on https://acourse.hotropka.io.vn
+11:10:25 Analysis nuclei_cve: [INFO] Ran nuclei_cve on https://acourse.hotropka.io.vn
+FINDING [INFO] Ran nuclei_cve on https://acourse.hotropka.io.vn
+11:10:25 Save finding [INFO]
+11:10:26 Step 28/50: decide next tool
+11:10:26 Web Agent: done
+11:10:26 Service Agent: done
+11:10:26 Report Agent: done
+11:10:26 Report Agent: generating report
+11:10:26 Report Agent: done
+11:10:26 Session complete
+FINAL SUMMARY
+Final Recon Summary
+Target: https://acourse.hotropka.io.vn/
+Findings: 30
+Severity: critical=0, high=0, medium=0, low=0, info=30
+
+Ports / Services
+80/http
+443/ssl/https
+
+Web Targets
+https://acourse.hotropka.io.vn
+
+Tech
+Sale
+
+Reports
+Markdown: outputs/https___acourse.hotropka.io.vn_/recon-report.md
+JSON: outputs/https___acourse.hotropka.io.vn_/recon-report.json
+Live log: outputs/https___acourse.hotropka.io.vn_/live-activity.log
+
+Complete.
