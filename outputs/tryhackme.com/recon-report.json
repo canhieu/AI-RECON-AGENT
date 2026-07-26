@@ -1,0 +1,297 @@
+{
+  "target": "tryhackme.com",
+  "generated_at": "2026-07-18T10:58:58.469644",
+  "summary": {
+    "total": 32,
+    "by_severity": {
+      "critical": 0,
+      "high": 0,
+      "medium": 5,
+      "low": 0,
+      "info": 27
+    },
+    "tech_stack": "Vercel unknown, Golang net/http unknown, TLS unknown, Namecheap Registrar unknown, Cloudflare DNS unknown, WHOIS Privacy Protection unknown, DNSSEC unsigned, DNS A record N/A, noVNC unknown, GitLab unknown, Wildcard TLS certificates unknown, dnsx unknown; installed build does not support -oJ, Wildcard TLS Certificates unknown, dnsx installed build does not support -oJ, HTTPS virtual hosting unknown, Wildcard or catch-all host handling unknown, text/html web application response unknown, HTTP/2 unknown, Vercel Challenge / Bot Mitigation unknown, text/html web response unknown, DNSSEC unsigned not enabled, Vercel edge protection / rate limiting unknown, JavaScript application surface unknown, HTTPS unknown, Vercel or edge-hosted web application unknown, Wildcard/custom error response handling unknown, ffuf-recursive-enumeration unknown, Wildcard or custom error response handling unknown, Possible Vercel or edge-hosted application unknown, Possible Vercel edge-hosted application unknown, Possible bot mitigation or edge filtering unknown, Vercel Security Checkpoint unknown, Vercel Edge Hosting unknown, JavaScript Bot Mitigation Challenge unknown, Next.js data route surface unknown, Astro-generated checkpoint page unknown, HTTP/2 HTTPS web service unknown, Astro unknown, Next.js path surface unknown, Vercel Edge Hosting / Bot Mitigation unknown, JavaScript challenge / browser verification unknown, HTML5 web application unknown, Vercel Security Checkpoint / Bot Mitigation unknown, Next.js unknown",
+    "ports": [
+      "53/authoritative DNS via Cloudflare nameservers",
+      "80/HTTP",
+      "80/http",
+      "80/http - Vercel edge service returning 308 Permanent Redirect to HTTPS",
+      "80/http-redirect",
+      "443/HTTP/2 TLS web service",
+      "443/HTTP/2 over TLS",
+      "443/HTTPS",
+      "443/HTTPS edge/backend endpoint",
+      "443/HTTPS web application behind Vercel",
+      "443/HTTPS web application behind Vercel edge",
+      "443/HTTPS web application behind Vercel edge protection",
+      "443/http2-over-tls",
+      "443/https",
+      "443/https-vhost-candidate",
+      "443/https/api",
+      "443/https/assets",
+      "443/https/authentication",
+      "443/https/cdn",
+      "443/https/gitlab-related",
+      "443/https/novnc",
+      "443/https/remote-access",
+      "443/https/reverse-proxy",
+      "443/https/status",
+      "443/ssl/http",
+      "443/ssl/http - Vercel-hosted HTTPS service with certificate for tryhackme.com"
+    ]
+  },
+  "findings": [
+    {
+      "severity": "info",
+      "tool": "nmap",
+      "summary": "The target resolves to 64.239.109.193, with an additional address 64.239.123.193 not scanned, and exposes only HTTP on port 80 and HTTPS on port 443 while 112 TCP ports are filtered. Both web services appear to be fronted by Vercel, with HTTP returning 308 redirects to HTTPS and HTTPS presenting a valid TLS certificate for tryhackme.com. The scan does not reveal direct host-level services such as SSH or databases, suggesting the attack surface is primarily web/application-layer and CDN/platform configuration rather than traditional infrastructure exploitation.",
+      "evidence": "Nmap reported host 64.239.109.193 up with low latency and noted another address, 64.239.123.193, was not scanned. Only 80/tcp and 443/tcp were open; 112 TCP ports were filtered. Port 80 was identified as HTTP with server header 'Vercel' and returned 'HTTP/1.0 308 Permanent Redirect' with Location values such as 'https:///' and 'https:///nice%20ports%2C/Tri%6Eity.txt%2ebak'. Port 443 was identified as ssl/http with server header 'Vercel', service fingerprint 'Golang net/http server', and a TLS certificate subject/SAN for DNS:tryhackme.com valid from 2026-05-22 to 2026-08-20.",
+      "created_at": "2026-07-18 03:34:38"
+    },
+    {
+      "severity": "info",
+      "tool": "whois",
+      "summary": "WHOIS shows tryhackme.com is a Namecheap-registered domain created in 2018 and renewed/updated in 2025, with registration valid until 2034. The domain uses Cloudflare authoritative nameservers, indicating DNS and likely edge protection/CDN services are in use, while registrant details are privacy-protected. DNSSEC is reported as unsigned, which is a minor DNS integrity weakness but not directly exploitable in most CTF web exploitation paths.",
+      "evidence": "WHOIS output lists Registrar: NameCheap, Inc.; Name Server: KIP.NS.CLOUDFLARE.COM and UMA.NS.CLOUDFLARE.COM; DNSSEC: unsigned; Domain Status: clientTransferProhibited; registrant organization is 'Privacy service provided by Withheld for Privacy ehf'. Session context also notes prior nmap resolution to 64.239.109.193 with additional address 64.239.123.193, and exposed HTTP/HTTPS on ports 80 and 443.",
+      "created_at": "2026-07-18 03:34:59"
+    },
+    {
+      "severity": "info",
+      "tool": "dig",
+      "summary": "The DNS A lookup for tryhackme.com returned two IPv4 addresses, 64.239.123.193 and 64.239.109.193, indicating the apex domain is load-balanced or served through multiple edge/backend endpoints. In the current recon context, only 64.239.109.193 has been scanned so far, meaning 64.239.123.193 remains an untested target that could expose different services, routing behavior, TLS certificates, headers, or virtual-host responses. The short TTL of 125 seconds suggests dynamic infrastructure, CDN/edge routing, or frequently rotated hosting records, so repeated resolution and per-IP testing may be useful in a CTF/boot2root workflow.",
+      "evidence": "DiG returned NOERROR for tryhackme.com A with two answers: tryhackme.com. 125 IN A 64.239.123.193 and tryhackme.com. 125 IN A 64.239.109.193. The query completed successfully via resolver 192.168.1.1 with a 63 msec response time. Prior session context states that 64.239.109.193 was scanned and exposed HTTP on port 80 and HTTPS on port 443, while 64.239.123.193 has not yet been scanned.",
+      "created_at": "2026-07-18 03:35:19"
+    },
+    {
+      "severity": "info",
+      "tool": "crt_sh",
+      "summary": "The crt.sh certificate transparency lookup failed and returned no certificate/subdomain data, so this specific reconnaissance step did not produce additional hostnames or virtual hosts to target. Existing context indicates the domain is publicly registered through Namecheap, uses Cloudflare authoritative DNS, has unsigned DNSSEC, resolves to two IPv4 addresses, and exposes only HTTP/HTTPS on the scanned address, suggesting the main attack surface is web-focused rather than broad network service exposure.",
+      "evidence": "crt_sh reported Success: False with no tool output, meaning no certificate transparency results were obtained from this run. Session context shows previously discovered technologies and posture: Vercel unknown, Golang net/http unknown, TLS unknown, Namecheap Registrar, Cloudflare DNS, WHOIS Privacy Protection, DNSSEC unsigned, and no single DNS A record value. Recent findings state that dig returned two IPv4 addresses for tryhackme.com, 64.239.123.193 and 64.239.109.193; WHOIS shows Namecheap registration with Cloudflare authoritative nameservers; and nmap found only ports 80/http and 443/https exposed on 64.239.109.193 while 112 TCP ports were filtered.",
+      "created_at": "2026-07-18 03:36:35"
+    },
+    {
+      "severity": "medium",
+      "tool": "subfinder",
+      "summary": "Subdomain enumeration identified a broad TryHackMe attack surface spanning production VM infrastructure, reverse proxies, noVNC gateways, authentication setup, GitLab/assets hosts, status APIs, CDN/image delivery, remote access endpoints, blog/careers/help sites, and regional cell deployments. The most security-relevant findings are the exposed management-style and infrastructure-adjacent hostnames such as noVNC gateways, reverse-proxy nodes, GitLab assets, setup.auth, status-api.vm, and remote-* hosts, which may reveal authentication flows, tenant isolation issues, metadata, or misconfigured access controls. Multiple hosts include region/cell identifiers and wildcard certificate indicators, suggesting scalable multi-region infrastructure where virtual-host routing, wildcard TLS, and environment segregation should be tested carefully.",
+      "evidence": "subfinder returned numerous hostnames including reverse-proxy-us-east-1.tryhackme.com, multiple novnc.cell-prod-*.vm.tryhackme.com hosts, cell-prod regional VM hosts, reverse-proxy.cell-prod-*.vm.tryhackme.com hosts, setup.auth.tryhackme.com, status.tryhackme.com, status.vm.tryhackme.com, status-api.vm.tryhackme.com, gitlab.assets.tryhackme.com, beta.assets.tryhackme.com, cdn-images.tryhackme.com, insights-proxy-worker.tryhackme.com, remote-us-west-1.tryhackme.com, remote-eu-1.tryhackme.com, blog.tryhackme.com, careers.tryhackme.com, newhelp.tryhackme.com, lp.tryhackme.com, and www.tryhackme.com. Many VM/cell and reverse-proxy/noVNC entries include wildcard_certificate:true, supporting the presence of wildcard TLS and potentially shared virtual-host infrastructure. Prior context shows the apex tryhackme.com resolved to 64.239.123.193 and 64.239.109.193 and nmap found exposed HTTP/80 and HTTPS/443 with other scanned TCP ports filtered.",
+      "created_at": "2026-07-18 03:38:24"
+    },
+    {
+      "severity": "info",
+      "tool": "dnsx",
+      "summary": "The dnsx execution did not complete because the supplied output flag `-oJ` is not supported by the installed dnsx version, so this step produced no DNS resolution, wildcard, CNAME, or JSON-formatted enrichment data. This is a tooling/version mismatch rather than a target-side security finding, but it creates a reconnaissance blind spot because previously discovered TryHackMe subdomains and edge infrastructure were not validated or normalized by this run. Existing context still indicates a broad web-facing attack surface behind Cloudflare/edge infrastructure with HTTP/HTTPS exposure, but this specific dnsx result should not be treated as evidence of DNS misconfiguration.",
+      "evidence": "dnsx returned `Success: False` with the error `flag provided but not defined: -oJ`, indicating local command-line option incompatibility. No DNS records or hostname enrichment were produced by this run. Session context separately notes Cloudflare authoritative nameservers, Namecheap registration, apex A records 64.239.123.193 and 64.239.109.193, and nmap-observed HTTP/HTTPS exposure.",
+      "created_at": "2026-07-18 03:38:59"
+    },
+    {
+      "severity": "info",
+      "tool": "theharvester",
+      "summary": "theHarvester did not complete successfully and returned no usable OSINT artifacts for tryhackme.com, so this specific reconnaissance step did not add emails, employee names, hosts, or search-engine-derived subdomains. In the broader session context, the target already shows a sizeable externally exposed attack surface including production infrastructure, reverse proxies, noVNC gateways, GitLab/assets hosts, status/API surfaces, Vercel/Golang net/http indicators, Cloudflare DNS, wildcard TLS certificates, and DNSSEC being unsigned. The failed result should be treated as a tooling/data-source gap rather than evidence that no OSINT exposure exists.",
+      "evidence": "theHarvester reported Success: False and produced an empty Tool output, so no emails, names, or additional hosts were obtained from this step. Session context states discovered technologies and posture: Vercel unknown, Golang net/http unknown, TLS unknown, Namecheap Registrar, Cloudflare DNS, WHOIS Privacy Protection, DNSSEC unsigned, noVNC unknown, GitLab unknown, wildcard TLS certificates, and dnsx lacking -oJ support. Recent findings also state that subfinder identified a broad TryHackMe attack surface including production VM infrastructure, reverse proxies, noVNC gateways, authentication setup, GitLab/assets hosts, status APIs, CDN/image-related hosts; dig returned A records 64.239.123.193 and 64.239.109.193 for tryhackme.com; WHOIS shows Namecheap registration, Cloudflare authoritative nameservers, and domain validity until 2034.",
+      "created_at": "2026-07-18 03:40:31"
+    },
+    {
+      "severity": "info",
+      "tool": "whatweb",
+      "summary": "Ran whatweb on http://tryhackme.com",
+      "evidence": "[\n{\"target\":\"http://tryhackme.com\",\"http_status\":308,\"request_config\":{\"headers\":{\"User-Agent\":\"WhatWeb/0.6.4\"}},\"plugins\":{\"Country\":{\"string\":[\"UNITED STATES\"],\"module\":[\"US\"]},\"HTTPServer\":{\"string\":[\"Vercel\"]},\"IP\":{\"string\":[\"64.239.109.1\"]},\"RedirectLocation\":{\"string\":[\"https://tryhackme.com/\"]}}}\n,\n{\"target\":\"https://tryhackme.com/\",\"http_status\":429,\"request_config\":{\"headers\":{\"User-Agent\":\"WhatWeb/0.6.4\"}},\"plugins\":{\"Country\":{\"string\":[\"UNITED STATES\"],\"module\":[\"US\"]},\"HTML5\":{},\"H",
+      "created_at": "2026-07-18 03:40:44"
+    },
+    {
+      "severity": "info",
+      "tool": "redirect_check",
+      "summary": "Ran redirect_check on http://tryhackme.com",
+      "evidence": "REDIRECT:https://tryhackme.com/\n",
+      "created_at": "2026-07-18 03:40:47"
+    },
+    {
+      "severity": "info",
+      "tool": "redirect_target",
+      "summary": "Switch web target to redirect domain: https://tryhackme.com",
+      "evidence": "",
+      "created_at": "2026-07-18 03:40:48"
+    },
+    {
+      "severity": "info",
+      "tool": "ffuf_vhost",
+      "summary": "The ffuf virtual-host brute force against https://tryhackme.com produced multiple HTTP 403 responses for arbitrary Host headers such as SysAdmin2.tryhackme.com, TODO.tryhackme.com, U.tryhackme.com, and Travel.tryhackme.com. The responses are highly uniform in status, word count, line count, content type, and similar body length, which strongly suggests a wildcard/catch-all edge response rather than confirmed distinct virtual hosts. This finding is useful because it indicates the target's fronting infrastructure responds to unknown Host headers with a forbidden page, so future vhost enumeration must be calibrated with baseline filtering before treating hits as valid.",
+      "evidence": "ffuf command used Host header fuzzing: ffuf -u https://tryhackme.com -w /home/ngannguyen/Downloads/ppppp/data/wordlists/vhosts.txt -of json -o /tmp/tmpkd5pfh2q -H Host: FUZZ.tryhackme.com -fc 404. Multiple candidates returned HTTP 403 rather than 404, including SysAdmin2.tryhackme.com, TODO.tryhackme.com, U.tryhackme.com, Themes.tryhackme.com, Utilities.tryhackme.com, UserFiles.tryhackme.com, V.tryhackme.com, US.tryhackme.com, Video.tryhackme.com, Technology.tryhackme.com, TMP.tryhackme.com, and Travel.tryhackme.com. The response characteristics are nearly identical across hits: status 403, content-type text/html; charset=utf-8, words 949, lines 3, and lengths clustered around 33800-33811 bytes, indicating likely wildcard/catch-all forbidden responses rather than confirmed unique virtual hosts.",
+      "created_at": "2026-07-18 03:41:38"
+    },
+    {
+      "severity": "info",
+      "tool": "httpx",
+      "summary": "The httpx probe against https://tryhackme.com did not return successful output, so this specific run provides no fresh HTTP response metadata, status code, title, headers, or technology fingerprints. However, prior reconnaissance indicates a broad TryHackMe-owned attack surface involving Vercel/Golang-style HTTP services, Cloudflare DNS, wildcard/catch-all virtual hosting behavior, noVNC gateways, GitLab/assets hosts, VM infrastructure, status/API surfaces, and repeated 403 responses for arbitrary Host headers. The immediate value of this finding is that the primary apex target may be protected, filtered, rate-limited, or not producing parseable output for the current httpx build/configuration, so follow-up enumeration should focus on discovered subdomains, Host-header behavior, and service-specific endpoints rather than assuming the apex alone is the attack surface.",
+      "evidence": "The httpx run against https://tryhackme.com reported Success: False and produced no raw tool output. Session context records prior discoveries: Vercel unknown, Golang net/http unknown, TLS unknown, Namecheap Registrar, Cloudflare DNS, WHOIS Privacy Protection, DNSSEC unsigned, noVNC, GitLab, wildcard TLS certificates, HTTPS virtual hosting, wildcard/catch-all host handling, and text/html web application response. Recent findings also state that subfinder identified a broad TryHackMe attack surface spanning production VM infrastructure, reverse proxies, noVNC gateways, authentication setup, GitLab/assets hosts, status APIs, and CDN-related infrastructure. ffuf virtual-host brute forcing against https://tryhackme.com produced multiple HTTP 403 responses for arbitrary Host headers including SysAdmin2.tryhackme.com, TODO.tryhackme.com, and U.tryhackme.com. Redirect checks were run on http://tryhackme.com with the target switched to https://tryhackme.com.",
+      "created_at": "2026-07-18 03:42:13"
+    },
+    {
+      "severity": "info",
+      "tool": "curl_headers",
+      "summary": "The target responded over HTTPS with HTTP/2 status 429 from Vercel, indicating the request was rate-limited or challenged by Vercel's edge mitigation layer rather than served directly by the application. Headers show `x-vercel-mitigated: challenge` and an `x-vercel-challenge-token`, meaning automated reconnaissance is being detected and gated before reaching the origin application. This limits direct fingerprinting of the root domain but confirms Vercel hosting/proxying and suggests subsequent testing should focus on subdomains, alternate virtual hosts, API endpoints, and request-profile tuning to distinguish edge defenses from origin behavior.",
+      "evidence": "curl_headers against https://tryhackme.com succeeded and returned `HTTP/2 429`, `server: Vercel`, `x-vercel-mitigated: challenge`, `x-vercel-challenge-[REDACTED:credential] `x-vercel-id: hkg1::1784346134-Yz9tHzHAKoiORp62qtdi3LTqlcfXz6yO`, `cache-control: private, no-store, max-age=0`, and `content-type: text/html; charset=utf-8`. Prior session context also notes Vercel, Cloudflare DNS, wildcard TLS/catch-all host handling uncertainty, and ffuf virtual-host brute forcing returning multiple HTTP 403 responses for arbitrary Host headers.",
+      "created_at": "2026-07-18 03:42:59"
+    },
+    {
+      "severity": "info",
+      "tool": "cms_detect",
+      "summary": "The CMS detection run against https://tryhackme.com completed successfully but did not identify any common CMS, web framework, interesting default paths, or technology fingerprints. In context, this is consistent with earlier reconnaissance showing that the root site is likely fronted by Vercel and protected by rate limiting or bot mitigation, which may prevent fingerprinting tools from reaching the origin application. The lack of CMS findings should not be treated as evidence that the application has no framework or attack surface; it only means this specific probe did not fingerprint one.",
+      "evidence": "cms_detect output for target https://tryhackme.com returned success=true with root_url=https://tryhackme.com/ but empty arrays for cms, frameworks, interesting_paths, and tech_discovered. Session context also reports HTTPS on HTTP/2 with a prior 429 response from Vercel edge mitigation, broad subdomain enumeration including VM infrastructure, reverse proxies, noVNC gateways, authentication setup, GitLab/assets hosts, status APIs, CDN/image hosts, and ffuf virtual-host testing that produced HTTP 403 responses for arbitrary Host headers.",
+      "created_at": "2026-07-18 03:44:15"
+    },
+    {
+      "severity": "medium",
+      "tool": "katana",
+      "summary": "Katana successfully crawled https://tryhackme.com but discovered only the root URL and a single short path, /g, suggesting that the crawler was heavily constrained by edge controls, JavaScript-driven routing, authentication requirements, or bot mitigation. The broader session context indicates the target sits behind Vercel/Cloudflare-style edge infrastructure with HTTP/2, TLS, rate limiting or challenge behavior, wildcard/catch-all host handling, and a wide external attack surface including VM infrastructure, reverse proxies, noVNC gateways, GitLab/assets hosts, status APIs, and CDN/image-related services. The most actionable finding is not a direct vulnerability from this crawl, but confirmation that normal unauthenticated crawling of the main site yields limited visibility and that enumeration should pivot to discovered subdomains, authenticated application areas, API endpoints, noVNC gateways, and GitLab/assets infrastructure.",
+      "evidence": "Katana output shows successful crawl start for https://tryhackme.com and only two discovered URLs: https://tryhackme.com and https://tryhackme.com/g. The session context reports Vercel, Golang net/http, TLS, Cloudflare DNS, HTTP/2, Vercel Challenge / Bot Mitigation, wildcard TLS certificates, noVNC, GitLab, and DNSSEC unsigned. Recent findings also state that curl_headers received HTTP/2 status 429 from Vercel, cms_detect found no common CMS or framework fingerprints, httpx returned no successful metadata, subfinder identified broad subdomain exposure including production VM infrastructure, reverse proxies, noVNC gateways, GitLab/assets hosts, status APIs, and CDN/image services, and ffuf virtual-host brute forcing produced multiple HTTP 403 responses for arbitrary Host headers.",
+      "created_at": "2026-07-18 03:45:58"
+    },
+    {
+      "severity": "info",
+      "tool": "js_dump",
+      "summary": "The JavaScript extraction run against https://tryhackme.com completed successfully but returned no pages, JavaScript URLs, or client-side artifacts. In context with prior HTTP/2 429 responses from Vercel and limited crawling results, this likely indicates that edge bot mitigation, rate limiting, or JavaScript-heavy rendering prevented the tooling from accessing the real application surface rather than proving that no JavaScript exists. This result is useful primarily as negative evidence: unauthenticated automated reconnaissance from the current vantage point is being constrained at the edge.",
+      "evidence": "js_dump output for https://tryhackme.com reported Success: True but returned empty arrays for all extracted data: pages=[], js_urls=[], artifacts=[]. Prior session context shows katana only discovered the root URL and /g, curl observed HTTP/2 429 from Vercel, and CMS detection found no framework or default paths, supporting the assessment that automated unauthenticated discovery is being limited by edge controls rather than confirming absence of client-side assets.",
+      "created_at": "2026-07-18 03:47:08"
+    },
+    {
+      "severity": "info",
+      "tool": "js_deobfuscate",
+      "summary": "The JavaScript deobfuscation step completed successfully but returned no decoded strings or artifacts, meaning no client-side secrets, endpoints, source maps, API routes, or obfuscated logic were recovered from the supplied target at this stage. In the broader reconnaissance context, this is likely not evidence that the application has no JavaScript attack surface; rather, prior findings indicate Vercel edge rate-limiting/challenge behavior and constrained crawling, which likely prevented meaningful JavaScript collection before deobfuscation could occur. For a CTF or boot2root workflow, the current result should be treated as an access/visibility limitation and pivoted toward bypassing edge constraints, enumerating discovered subdomains, and targeting non-Vercel or less-protected application hosts.",
+      "evidence": "Tool js_deobfuscate completed with Success: True but returned {\"decoded\": [], \"artifacts\": []}. Prior context shows curl_headers received HTTP/2 429 from Vercel, katana crawled only the root URL and /g, and js_dump returned no pages, JavaScript URLs, or client-side artifacts, supporting the conclusion that edge controls or limited crawl visibility prevented useful JavaScript acquisition.",
+      "created_at": "2026-07-18 03:47:57"
+    },
+    {
+      "severity": "info",
+      "tool": "js_mine",
+      "summary": "The JavaScript mining step against https://tryhackme.com completed successfully but did not identify any endpoints, secrets, source maps, or other client-side artifacts. In the broader reconnaissance context, this reinforces the pattern that the root application is either heavily protected by Vercel edge/bot mitigation, highly JavaScript/API-gated in ways the tooling could not reach, or not exposing useful static assets to unauthenticated automated clients. For a CTF/boot2root workflow, the absence of findings here should not be treated as proof of no client-side attack surface; instead, it indicates that deeper crawling, authenticated analysis, subdomain-specific testing, and bypassing edge controls are likely required.",
+      "evidence": "js_mine completed with Success: True against https://tryhackme.com and returned empty arrays for all artifact categories: {\"endpoints\": [], \"secrets\": [], \"source_maps\": [], \"artifacts\": []}. This aligns with prior findings showing katana only reached the root URL and /g, js_dump returned no pages or JavaScript URLs, js_deobfuscate found no decoded strings or artifacts, and cms_detect identified no common CMS or framework fingerprints. Prior context also notes HTTP/2 429 responses and Vercel Challenge / Bot Mitigation, suggesting automated unauthenticated collection from the apex domain may be constrained by edge controls rather than confirming the absence of JavaScript/API surface.",
+      "created_at": "2026-07-18 03:48:25"
+    },
+    {
+      "severity": "info",
+      "tool": "ffuf_dir",
+      "summary": "The directory brute-force against https://tryhackme.com completed successfully but returned no surviving results after filtering out the dominant wildcard/error response pattern. The ffuf calibration observed that many invalid paths produce a consistent 3-line, 949-word response, indicating wildcard-style handling, custom error pages, or edge challenge behavior that can easily hide true positives if filters are too broad. In the broader context, this supports prior observations that the target is likely behind Vercel/edge protection and that unauthenticated crawling/fuzzing of the apex domain is heavily constrained.",
+      "evidence": "ffuf command: ffuf -u https://tryhackme.com/FUZZ -w /home/ngannguyen/Downloads/ppppp/data/wordlists/dir.txt -of json -o /tmp/tmp3f3swemg -fc 404 -fw 949 -fl 3. The run completed successfully with no results: \"results\": []. Calibration showed an initial run with 24 apparent results followed by filtering using dominant response characteristics: \"dominant_words\": [949], \"dominant_lines\": [3], and filters \"-fw\", \"949\", \"-fl\", \"3\". Matchers included common interesting statuses 200-299, 301, 302, 307, 401, 403, 405, and 500, while 404 responses were filtered. Runtime progress showed thousands of requests completed with 0 errors, indicating the absence of findings is likely due to response normalization/filtering rather than scan failure.",
+      "created_at": "2026-07-18 03:49:04"
+    },
+    {
+      "severity": "info",
+      "tool": "ffuf_recursive",
+      "summary": "The recursive ffuf directory brute-force against https://tryhackme.com completed successfully but produced no surviving directory or file discoveries after filtering. The scan appears to have encountered a consistent wildcard/custom error response pattern, with calibration identifying dominant false-positive responses of 949 words and 3 lines, which were filtered out. In the context of the wider recon, this supports the conclusion that the root web surface is protected by edge/application controls and does not expose simple wordlist-discoverable paths from this scan configuration.",
+      "evidence": "ffuf command executed: ffuf -u https://tryhackme.com/FUZZ -w /home/ngannguyen/Downloads/ppppp/data/wordlists/dir.txt -of json -o /tmp/tmpto12mx9o -recursion -recursion-depth 2 -fc 404 -fw 949 -fl 3. The results array is empty: \"results\": []. Calibration initially produced 24 apparent results, then a restarted calibrated run produced 0 results after applying filters: \"filters\": [\"-fw\", \"949\", \"-fl\", \"3\"]. Dominant false-positive characteristics were recorded as \"dominant_words\": [949] and \"dominant_lines\": [3]. The matcher configuration allowed common interesting statuses including 200-299, 301, 302, 307, 401, 403, 405, and 500, while filtering 404 and the dominant wildcard body pattern. The scan processed approximately 4750 wordlist entries with no reported request errors in the visible progress output.",
+      "created_at": "2026-07-18 03:50:00"
+    },
+    {
+      "severity": "info",
+      "tool": "ffuf_ext",
+      "summary": "The extension-based ffuf content discovery run against https://tryhackme.com completed successfully but produced no surviving findings after filtering the dominant wildcard/error response pattern. The calibration phase initially observed 504 apparent matches, then suppressed responses matching 949 words and 3 lines, indicating the site likely returns a consistent custom error, challenge, or catch-all page for nonexistent resources. No exposed backup files, config files, source artifacts, database dumps, logs, environment files, or common script extensions were identified by this wordlist scan.",
+      "evidence": "ffuf command targeted https://tryhackme.com/FUZZ with extensions .php,.asp,.aspx,.txt,.bak,.zip,.tar.gz,.sql,.conf,.inc,.old,.log,.json,.xml,.env,.yml,.yaml,.config,.db,.ds_store. The final results array is empty. Calibration recorded an initial run with result_count 504, followed by a calibrated run with result_count 0 using filters -fw 949 and -fl 3. The configured filters excluded HTTP 404 plus responses with 949 words and 3 lines, consistent with a dominant wildcard/custom error response. The run completed with approximately 99,750 requests, no reported errors, and no surviving discoveries.",
+      "created_at": "2026-07-18 03:53:14"
+    },
+    {
+      "severity": "medium",
+      "tool": "curl_body",
+      "summary": "Requesting https://tryhackme.com/_next/data/ did not expose Next.js data JSON; instead the response was an HTML page titled \"Vercel Security Checkpoint\", indicating the endpoint is being intercepted by Vercel edge security/bot-mitigation controls. The body contains a JavaScript-based challenge with obfuscated module code and hidden root content, which explains why prior automated crawling and ffuf runs discovered little beyond wildcard/error patterns. The path remains high-value because /_next/data/ is normally associated with Next.js page-props JSON and can leak application routes or serialized data if a valid build ID and route are known.",
+      "evidence": "The curl response for https://tryhackme.com/_next/data/ returned an HTML document rather than Next.js JSON. The page title is \"Vercel Security Checkpoint\" and the HTML includes styles/classes for a spinner, hidden root element, noscript/checkpoint text containers, and an obfuscated JavaScript module. The response contains Astro-style scoped attributes such as data-astro-cid-nbv56vs3 and data-astro-cid-jlpqxutv, supporting that the checkpoint page itself is generated separately from the target app. This aligns with earlier scan context where katana only found the root and /g, while ffuf directory and extension scans produced no surviving findings after filtering wildcard/error responses, suggesting automated tools are being constrained by Vercel edge challenge behavior.",
+      "created_at": "2026-07-18 03:53:44"
+    },
+    {
+      "severity": "medium",
+      "tool": "curl_body",
+      "summary": "A direct request to https://tryhackme.com/_next/static/ returned an HTML page titled \"Vercel Security Checkpoint\" rather than a static directory listing, Next.js asset response, or conventional 404. The response contains an Astro-generated challenge page with JavaScript-based bot mitigation, indicating that Vercel edge protection is intercepting requests to framework-reserved paths such as /_next/static/. In a CTF/boot2root context, this means unauthenticated automated enumeration against the primary domain is likely being rate-limited, challenged, or routed through a custom edge checkpoint rather than exposing the underlying application directly.",
+      "evidence": "The curl response from https://tryhackme.com/_next/static/ begins with a full HTML document: '<!DOCTYPE html><html lang=\"en\" ...><head>...<title>Vercel Security Checkpoint</title>'. The page includes Astro-style scoped attributes such as 'data-astro-cid-nbv56vs3' and 'data-astro-cid-jlpqxutv', CSS for a spinner, hidden root container '#root{display:none}', and an inline module script consistent with a JavaScript challenge. The requested path '/_next/static/' is normally associated with Next.js static assets, but instead returned the checkpoint page, supporting the conclusion that Vercel edge bot mitigation is intercepting enumeration attempts.",
+      "created_at": "2026-07-18 03:54:17"
+    },
+    {
+      "severity": "medium",
+      "tool": "curl_body",
+      "summary": "A direct request to https://tryhackme.com/api/ returned a Vercel Security Checkpoint HTML page instead of an API response, JSON error, route documentation, or a normal 404. This indicates that requests to the application API surface are being intercepted by Vercel edge bot-mitigation controls before reaching the backend application, which significantly limits unauthenticated curl-based enumeration. The response also reveals an Astro-generated checkpoint page and client-side JavaScript challenge behavior, suggesting that automated scanners may see false negatives unless they can execute JavaScript, preserve cookies, and mimic browser behavior.",
+      "evidence": "The body of https://tryhackme.com/api/ begins with an HTML document whose title is \"Vercel Security Checkpoint\". The response includes checkpoint-specific styling and JavaScript rather than JSON or an API error. Notable raw indicators include: '<title>Vercel Security Checkpoint</title>', Astro-style attributes such as 'data-astro-cid-nbv56vs3', a spinner component, and a module script containing obfuscated JavaScript challenge logic. The requested path was '/api/', but the returned content is a generic edge security checkpoint page, supporting that the request was intercepted before normal API route handling.",
+      "created_at": "2026-07-18 03:54:57"
+    },
+    {
+      "severity": "info",
+      "tool": "cms_detect",
+      "summary": "Ran cms_detect on https://tryhackme.com",
+      "evidence": "{\"cms\": [], \"frameworks\": [], \"interesting_paths\": [], \"root_url\": \"https://tryhackme.com/\", \"target\": \"https://tryhackme.com\", \"tech_discovered\": []}\n",
+      "created_at": "2026-07-18 03:55:04"
+    },
+    {
+      "severity": "info",
+      "tool": "web_download_interesting",
+      "summary": "Ran web_download_interesting on https://tryhackme.com/api/*",
+      "evidence": "{\"artifacts\": [], \"skipped\": \"not interesting\", \"score\": 0}\n",
+      "created_at": "2026-07-18 03:55:06"
+    },
+    {
+      "severity": "info",
+      "tool": "curl_body",
+      "summary": "Ran curl_body on https://tryhackme.com/api/*",
+      "evidence": "<!DOCTYPE html><html lang=\"en\" data-astro-cid-nbv56vs3> <head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><meta name=\"theme-color\" content=\"#000\"><title>Vercel Security Checkpoint</title><style>.spinner[data-astro-cid-jlpqxutv]{display:flex;flex-direction:column;justify-content:center;align-items:center}.spinner-circle[data-astro-cid-jlpqxutv]{transform-origin:center;animation:spinner-circle-animate 1s step-start infinite}rect[data-astro-cid-jlpqxutv",
+      "created_at": "2026-07-18 03:55:09"
+    },
+    {
+      "severity": "info",
+      "tool": "arjun",
+      "summary": "Ran arjun on https://tryhackme.com",
+      "evidence": "{}",
+      "created_at": "2026-07-18 03:55:11"
+    },
+    {
+      "severity": "info",
+      "tool": "subdomain_live",
+      "summary": "Ran subdomain_live on tryhackme.com",
+      "evidence": "https://admin.tryhackme.com [\u001b[33m301\u001b[0m] [\u001b[36m301 Moved Permanently\u001b[0m]\nhttps://guacaworker.tryhackme.com [\u001b[31m400\u001b[0m]\nhttps://docs.tryhackme.com [\u001b[33m301\u001b[0m] [\u001b[36m301 Moved Permanently\u001b[0m]\nhttps://insights-proxy-worker.tryhackme.com [\u001b[31m401\u001b[0m]\nhttps://blog.tryhackme.com [\u001b[33m301\u001b[0m] [\u001b[36m301 Moved Permanently\u001b[0m]\nhttps://flowcheck.tryhackme.com [\u001b[33m302\u001b[0m]\nhttps://business.tryhackme.com [\u001b[33m301\u001b[0m] [\u001b[36m301 Moved Permanently\u001b[0m]\nhttps://novnc.cell-prod-ap-south-1a.vm.t",
+      "created_at": "2026-07-18 03:55:57"
+    },
+    {
+      "severity": "info",
+      "tool": "nuclei_smart",
+      "summary": "The nuclei scan did not execute because the local nuclei templates directory is missing, so no nuclei-based vulnerability conclusions can be drawn from this run. Existing reconnaissance indicates the target is strongly edge-protected by Vercel bot mitigation/security checkpoint behavior, with direct requests to API, Next.js, and static paths being intercepted rather than returning normal application responses. The broader attack surface appears to include multiple subdomains and infrastructure classes such as noVNC gateways, GitLab/assets hosts, reverse proxies, status/API services, and VM-related infrastructure, which are likely more productive targets than the heavily protected apex host.",
+      "evidence": "nuclei failed with: `[FTL] Could not run nuclei: could not create automatic scan service: could not get templates in directory: no templates found in path \"/home/ngannguyen/nuclei-templates\"`. Session context reports Vercel/edge protection and multiple intercepted paths: direct request to `https://tryhackme.com/api/` returned a `Vercel Security Checkpoint` HTML page; `https://tryhackme.com/_next/static/` returned an HTML page titled `Vercel Security Checkpoint`; `https://tryhackme.com/_next/data/` also returned a checkpoint page instead of Next.js data JSON. Katana only discovered the root URL and `/g`, suggesting crawl restriction by edge controls or JavaScript gating. Subfinder reportedly identified a broad attack surface including production VM infrastructure, reverse proxies, noVNC gateways, authentication setup, GitLab/assets hosts, status APIs, CDN/import-related hosts, and other subdomains.",
+      "created_at": "2026-07-18 03:57:31"
+    },
+    {
+      "severity": "info",
+      "tool": "nuclei_cve",
+      "summary": "The nuclei CVE scan did not execute because no nuclei templates were provided, so this output does not confirm or deny the presence of known CVEs on the target. Existing reconnaissance indicates the main HTTPS surface is protected by Vercel edge controls and bot-mitigation challenge pages, which are preventing straightforward crawling and API/static route probing. The broader discovered attack surface appears more promising than the protected apex host, especially subdomains related to noVNC, GitLab/assets, authentication, status APIs, reverse proxies, and VM infrastructure.",
+      "evidence": "The nuclei tool failed with: '[FTL] Could not run nuclei: no templates provided for scan'. Prior findings show repeated Vercel checkpoint interception: direct requests to https://tryhackme.com/api/, https://tryhackme.com/_next/static/, and https://tryhackme.com/_next/data/ returned an HTML page titled 'Vercel Security Checkpoint' rather than expected API, static, JSON, or 404 responses. Katana only discovered the root URL and /g, suggesting crawler constraints from edge controls or JavaScript-driven routing. Subfinder identified a broad attack surface including production VM infrastructure, reverse proxies, noVNC gateways, authentication setup, GitLab/assets hosts, status APIs, CDN, and related subdomains.",
+      "created_at": "2026-07-18 03:58:53"
+    },
+    {
+      "severity": "info",
+      "tool": "dns_check",
+      "summary": "Ran dns_check on tryhackme.com",
+      "evidence": "service=dns\npurpose=DNS recursion and zone leakage\nports=53\n53: closed\n",
+      "created_at": "2026-07-18 03:58:57"
+    }
+  ],
+  "artifacts": [],
+  "attack_leads": [
+    {
+      "severity": "medium",
+      "summary": "CMS/technology found; check public CVEs, admin panels, exposed modules, and login surfaces."
+    },
+    {
+      "severity": "high",
+      "summary": "SSH service + credential artifacts discovered; test password reuse and check for exposed private keys."
+    },
+    {
+      "severity": "medium",
+      "summary": "Admin/debug/backup endpoint exposed; probe for default credentials, information disclosure, and auth bypass."
+    },
+    {
+      "severity": "medium",
+      "summary": "API endpoints discovered; probe for parameter injection, IDOR, excessive data exposure, and missing auth."
+    },
+    {
+      "severity": "high",
+      "summary": "LLM analysis suggests specific vulnerability classes present; prioritize targeted testing based on identified classes."
+    }
+  ],
+  "recommendations": [
+    "\u25b6 Tech stack detected \u2014 check CVEs per version",
+    "\u25b6 Run nuclei_smart + nuclei_cve with matching CVE templates",
+    "\u25b6 Re-run with --verbose for detailed output"
+  ]
+}

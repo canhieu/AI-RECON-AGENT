@@ -1,0 +1,351 @@
+AI Recon Agent live activity
+11:07:31 Session start
+11:07:31 Agents ready: Port Agent, Web Agent, Service Agent, Report Agent
+11:07:31 RTK token savings: unavailable (rtk not found)
+11:07:31 Step 1/50: decide next tool
+11:07:31 Port Agent: running nmap
+11:07:31 Run nmap -> scanme.nmap.org
+11:08:12 nmap: OK (40.35s)
+11:08:12 Parsed: {'ports': [{'port': 80, 'state': 'open', 'protocol': 'tcp', 'service': 'http', 'version': 'Apache httpd 2.4.7 ((Ubuntu))'}], 'all_ports': [{'port': 25, 'state': 'closed', 'protocol': 'tcp', 'service': 'smtp'}, {'port': 80, 'state': 'open', 'protocol': 'tcp', 'service': 'http', 'version': 'Apache httpd 2.4.7 ((Ubuntu))'}, {'port': 110, 'state': 'closed', 'protocol': 'tcp', 'service': 'pop3'}, {'port': 143, 'state': 'closed', 'protocol': 'tcp', 'service': 'imap'}, {'port': 443, 'state': 'closed', 
+ANALYSIS nmap [low]: The target scanme.nmap.org at 45.33.32.156 is reachable and exposes a single open TCP service: HTTP on port 80, running Apache httpd 2.4.7 on Ubuntu. Several mail/database-related ports are explicitly closed, while 104 scanned TCP ports are filtered, indicating firewalling or packet filtering. In a  | targets=http://scanme.nmap.org/, http://45.33.32.156/, http://scanme.nmap.org/robots.txt | tech=Apache httpd, Ubuntu, Nmap Project favicon/site | services=80/http, 25/smtp, 110/pop3, 143/imap | evidence=Nmap reports host 45.33.32.156 is up with 0.22s latency. Port 80/tcp is open and identified as 'http Apache httpd 2.4.7 ((Ubuntu))'. NSE output shows 'http-server-header: Apache/2.4.7 (Ubuntu)', 'http-title: Go ahead and ScanMe!', and 'http
+11:08:42 Analysis nmap: [LOW] The target scanme.nmap.org at 45.33.32.156 is reachable and exposes a single open TCP service: HTTP on port 80, running Apache httpd 2.4.7 on Ubuntu. Several mail/database-related ports are explicitly closed, while 104 scanned TCP ports are filtered, indicating firewalling or packet filtering. In a 
+FINDING [LOW] The target scanme.nmap.org at 45.33.32.156 is reachable and exposes a single open TCP service: HTTP on port 80, running Apache httpd 2.4.7 on Ubuntu. Several mail/database-related ports are explicitly closed, while 104 scanned TCP ports are filtered, indicating firewalling or packet filtering. In a CTF/boot2root context, the web service is the primary attack surface and should be enumerated for hidden content, vulnerable applications, default files, and Apache/Ubuntu-specific misconfigurations.
+11:08:42 Save finding [LOW]
+11:08:43 Step 2/50: decide next tool
+11:08:43 Port Agent: done
+11:08:43 Web Agent: running whois
+11:08:43 Run whois -> scanme.nmap.org
+11:08:53 whois: FAIL (10.01s)
+ANALYSIS whois [info]: The WHOIS lookup for scanme.nmap.org did not complete because the process was interrupted by signal 15, so it provides no reliable registrant, netblock, ASN, or ownership intelligence. Based on the session context, the target remains reachable at 45.33.32.156 with a single confirmed exposed TCP serv | targets=http://scanme.nmap.org/, http://45.33.32.156/, http://scanme.nmap.org/server-status | tech=Apache httpd, Ubuntu | services=80/HTTP | evidence=WHOIS command failed with: 'Interrupted by signal 15...'. Session context states: 'Apache httpd 2.4.7, Ubuntu unknown, Nmap Project favicon/site unknown' and '[low] nmap: The target scanme.nmap.org at 45.33.32.156 is reachable and exposes a
+11:09:15 Analysis whois: [INFO] The WHOIS lookup for scanme.nmap.org did not complete because the process was interrupted by signal 15, so it provides no reliable registrant, netblock, ASN, or ownership intelligence. Based on the session context, the target remains reachable at 45.33.32.156 with a single confirmed exposed TCP serv
+FINDING [INFO] The WHOIS lookup for scanme.nmap.org did not complete because the process was interrupted by signal 15, so it provides no reliable registrant, netblock, ASN, or ownership intelligence. Based on the session context, the target remains reachable at 45.33.32.156 with a single confirmed exposed TCP service: HTTP on port 80 running Apache httpd 2.4.7 on Ubuntu. In a CTF or boot2root context, the failed WHOIS result should be treated as an enumeration gap rather than a finding, while the exposed web service remains the primary attack surface.
+11:09:15 Save finding [INFO]
+11:09:16 Step 3/50: decide next tool
+11:09:16 Web Agent: running dig
+11:09:16 Run dig -> scanme.nmap.org
+11:09:16 dig: OK (0.09s)
+11:09:16 Parsed: [{'type': 'A', 'value': '45.33.32.156'}]
+ANALYSIS dig [info]: DNS resolution for scanme.nmap.org succeeded and returned a single A record pointing to 45.33.32.156, confirming the hostname-to-IP mapping for subsequent web and network testing. The response was NOERROR with a TTL of 2761 seconds and was received from the configured recursive resolver at 10.22.103 | targets=http://scanme.nmap.org/, http://45.33.32.156/, http://scanme.nmap.org/robots.txt | tech=DNS A record, Apache httpd, Ubuntu | services=53/DNS resolution observed via recursive resolver, 80/HTTP - Apache httpd 2.4.7 on Ubuntu | evidence=DiG query for scanme.nmap.org A returned status NOERROR with one answer: scanme.nmap.org. 2761 IN A 45.33.32.156. The response came from DNS resolver 10.22.103.10#53 over UDP and completed successfully with query time 0 msec. Session contex
+11:09:37 Analysis dig: [INFO] DNS resolution for scanme.nmap.org succeeded and returned a single A record pointing to 45.33.32.156, confirming the hostname-to-IP mapping for subsequent web and network testing. The response was NOERROR with a TTL of 2761 seconds and was received from the configured recursive resolver at 10.22.103
+FINDING [INFO] DNS resolution for scanme.nmap.org succeeded and returned a single A record pointing to 45.33.32.156, confirming the hostname-to-IP mapping for subsequent web and network testing. The response was NOERROR with a TTL of 2761 seconds and was received from the configured recursive resolver at 10.22.103.10. In the current context, this reinforces that the previously discovered Apache HTTP service on port 80 should be tested both by IP address and by hostname, because name-based virtual hosting may expose different content or behavior.
+11:09:37 Save finding [INFO]
+11:09:38 Step 4/50: decide next tool
+11:09:38 Web Agent: running crt_sh
+11:09:38 Run crt_sh -> scanme.nmap.org
+11:09:39 crt_sh: OK (1.41s)
+ANALYSIS crt_sh [info]: The crt.sh lookup for scanme.nmap.org completed successfully but returned no certificate transparency entries, indicating there are no publicly logged TLS certificates for this exact hostname in the queried data set. This is consistent with the currently observed exposure being plain HTTP on port 80 | targets=http://scanme.nmap.org/, http://45.33.32.156/, http://scanme.nmap.org/server-status | tech=Apache httpd, Ubuntu | services=80/HTTP, 80/Apache httpd 2.4.7 | evidence=crt_sh lookup for target scanme.nmap.org succeeded but returned an empty array: []. Session context shows DNS resolution for scanme.nmap.org points to 45.33.32.156 and prior service detection found a single open TCP service: HTTP on port 80
+11:09:57 Analysis crt_sh: [INFO] The crt.sh lookup for scanme.nmap.org completed successfully but returned no certificate transparency entries, indicating there are no publicly logged TLS certificates for this exact hostname in the queried data set. This is consistent with the currently observed exposure being plain HTTP on port 80
+FINDING [INFO] The crt.sh lookup for scanme.nmap.org completed successfully but returned no certificate transparency entries, indicating there are no publicly logged TLS certificates for this exact hostname in the queried data set. This is consistent with the currently observed exposure being plain HTTP on port 80 rather than HTTPS, and it does not reveal additional subdomains, SAN names, or virtual hosts to expand the attack surface. In a CTF/boot2root context, this reduces the usefulness of certificate-based recon but reinforces focusing on the discovered Apache HTTP service and alternate vhost/content discovery techniques.
+11:09:57 Save finding [INFO]
+11:09:58 Step 5/50: decide next tool
+11:09:58 Web Agent: running subfinder
+11:09:58 Run subfinder -> scanme.nmap.org
+11:10:50 subfinder: OK (51.87s)
+11:10:50 Parsed: [{'host': 'nmap.scanme.nmap.org', 'input': 'scanme.nmap.org', 'source': 'waybackarchive'}]
+ANALYSIS subfinder [info]: Subdomain enumeration for scanme.nmap.org completed successfully and identified one additional hostname: nmap.scanme.nmap.org, sourced from Wayback Machine archival data. This expands the target surface beyond the previously confirmed scanme.nmap.org host at 45.33.32.156, which is known from earlier | targets=http://nmap.scanme.nmap.org/, http://scanme.nmap.org/, http://45.33.32.156/ with Host: nmap.scanme.nmap.org | tech=Apache httpd, Ubuntu, subfinder | services=80/http, 0/unknown | evidence=subfinder reported successful enumeration for scanme.nmap.org and found one subdomain: {"host":"nmap.scanme.nmap.org","input":"scanme.nmap.org","source":"waybackarchive"}. The tool output states: '[INF] Enumerating subdomains for scanme.nma
+11:11:13 Analysis subfinder: [INFO] Subdomain enumeration for scanme.nmap.org completed successfully and identified one additional hostname: nmap.scanme.nmap.org, sourced from Wayback Machine archival data. This expands the target surface beyond the previously confirmed scanme.nmap.org host at 45.33.32.156, which is known from earlier
+FINDING [INFO] Subdomain enumeration for scanme.nmap.org completed successfully and identified one additional hostname: nmap.scanme.nmap.org, sourced from Wayback Machine archival data. This expands the target surface beyond the previously confirmed scanme.nmap.org host at 45.33.32.156, which is known from earlier reconnaissance to expose HTTP on TCP/80 running Apache httpd 2.4.7 on Ubuntu. Because the discovered subdomain comes from historical data, it should be validated with DNS resolution, HTTP probing, and virtual-host testing before assuming it is live or mapped to the same infrastructure.
+11:11:13 Save finding [INFO]
+11:11:14 Step 6/50: decide next tool
+11:11:14 Web Agent: running dnsx
+11:11:14 Run dnsx -> scanme.nmap.org
+11:11:15 dnsx: FAIL (0.31s)
+ANALYSIS dnsx [info]: The dnsx run did not produce DNS intelligence because the command failed before execution due to an unsupported flag, specifically '-oJ'. This means no new DNS records, wildcard behavior, CNAMEs, resolvers, or additional host-to-IP mappings were validated by this tool invocation. Existing context re | targets=http://scanme.nmap.org/, http://45.33.32.156/, http://nmap.scanme.nmap.org/ | tech=dnsx, Apache httpd, Ubuntu | services=80/http | evidence=Tool execution failed with: 'flag provided but not defined: -oJ'. No dnsx results were generated. Prior session context indicates scanme.nmap.org resolves to 45.33.32.156, TCP/80 is open, Apache httpd 2.4.7 on Ubuntu was detected, and subfi
+11:11:35 Analysis dnsx: [INFO] The dnsx run did not produce DNS intelligence because the command failed before execution due to an unsupported flag, specifically '-oJ'. This means no new DNS records, wildcard behavior, CNAMEs, resolvers, or additional host-to-IP mappings were validated by this tool invocation. Existing context re
+FINDING [INFO] The dnsx run did not produce DNS intelligence because the command failed before execution due to an unsupported flag, specifically '-oJ'. This means no new DNS records, wildcard behavior, CNAMEs, resolvers, or additional host-to-IP mappings were validated by this tool invocation. Existing context remains the reliable basis for analysis: scanme.nmap.org resolves to 45.33.32.156, exposes HTTP on TCP/80, and appears to run Apache httpd 2.4.7 on Ubuntu, with one archival hostname nmap.scanme.nmap.org identified via subfinder.
+11:11:35 Save finding [INFO]
+11:11:36 Step 7/50: decide next tool
+11:11:36 Web Agent: running theharvester
+11:11:36 Run theharvester -> scanme.nmap.org
+11:12:36 theharvester: FAIL (60.03400659561157s)
+ANALYSIS theharvester [info]: Reconnaissance shows the target 45.33.32.156 exposes only HTTP on port 80, running Apache httpd 2.4.7 on Ubuntu. DNS resolution for scanme.nmap.org is valid and a second hostname, nmap.scanme.nmap.org, was discovered via Wayback data, expanding the web attack surface. No certificate transparency ent | targets=http://scanme.nmap.org/, http://nmap.scanme.nmap.org/, http://scanme.nmap.org/robots.txt | tech=Apache httpd, Ubuntu, Nmap Project site/branding | services=80/HTTP, 80/HTTP, 80/HTTP | evidence=nmap reported one open TCP service: HTTP on port 80, running Apache httpd 2.4.7 on Ubuntu; dig resolved scanme.nmap.org to 45.33.32.156; subfinder identified nmap.scanme.nmap.org from Wayback Machine archival data; crt.sh returned no certif
+11:13:05 Analysis theharvester: [INFO] Reconnaissance shows the target 45.33.32.156 exposes only HTTP on port 80, running Apache httpd 2.4.7 on Ubuntu. DNS resolution for scanme.nmap.org is valid and a second hostname, nmap.scanme.nmap.org, was discovered via Wayback data, expanding the web attack surface. No certificate transparency ent
+FINDING [INFO] Reconnaissance shows the target 45.33.32.156 exposes only HTTP on port 80, running Apache httpd 2.4.7 on Ubuntu. DNS resolution for scanme.nmap.org is valid and a second hostname, nmap.scanme.nmap.org, was discovered via Wayback data, expanding the web attack surface. No certificate transparency entries were found for the exact hostname, and the dnsx step failed before execution, so DNS-based intelligence is incomplete.
+11:13:05 Save finding [INFO]
+11:13:06 Step 8/50: decide next tool
+11:13:06 Web Agent: running whatweb
+11:13:06 Run whatweb -> http://scanme.nmap.org
+11:13:13 whatweb: OK (7.41s)
+11:13:13 Parsed: [{'target': 'http://scanme.nmap.org', 'http_status': 200, 'request_config': {'headers': {'User-Agent': 'WhatWeb/0.6.4'}}, 'plugins': {'Apache': {'version': ['2.4.7']}, 'Country': {'string': ['RESERVED'], 'module': ['ZZ']}, 'Google-Analytics': {'version': ['Universal'], 'account': ['UA-11009417-1']}, 'HTML5': {}, 'HTTPServer': {'os': ['Ubuntu Linux'], 'string': ['Apache/2.4.7 (Ubuntu)']}, 'IP': {'string': ['45.33.32.156']}, 'Script': {}, 'Title': {'string': ['Go ahead and ScanMe!']}}}]
+ANALYSIS whatweb [low]: WhatWeb confirms that http://scanme.nmap.org is serving HTTP successfully on port 80 with Apache httpd 2.4.7 on Ubuntu, returning a 200 OK page titled "Go ahead and ScanMe!". The exposed server version is old and may indicate an outdated Ubuntu/Apache stack, but this finding alone is primarily recon | targets=http://scanme.nmap.org/, http://scanme.nmap.org/robots.txt, http://scanme.nmap.org/sitemap.xml | tech=Apache httpd, Ubuntu Linux, Google Analytics | services=80/http, 80/Apache/2.4.7 (Ubuntu) | evidence=WhatWeb returned HTTP 200 for http://scanme.nmap.org and identified Apache version 2.4.7 via the Apache plugin. The HTTPServer plugin reported "Apache/2.4.7 (Ubuntu)" with OS "Ubuntu Linux". The IP plugin identified 45.33.32.156, the Title 
+11:13:37 Analysis whatweb: [LOW] WhatWeb confirms that http://scanme.nmap.org is serving HTTP successfully on port 80 with Apache httpd 2.4.7 on Ubuntu, returning a 200 OK page titled "Go ahead and ScanMe!". The exposed server version is old and may indicate an outdated Ubuntu/Apache stack, but this finding alone is primarily recon
+FINDING [LOW] WhatWeb confirms that http://scanme.nmap.org is serving HTTP successfully on port 80 with Apache httpd 2.4.7 on Ubuntu, returning a 200 OK page titled "Go ahead and ScanMe!". The exposed server version is old and may indicate an outdated Ubuntu/Apache stack, but this finding alone is primarily reconnaissance and version-disclosure rather than proof of exploitable compromise. The site also includes Google Analytics Universal tracking and client-side scripting, which may provide additional pages or JavaScript-driven functionality to review during content discovery.
+11:13:37 Save finding [LOW]
+11:13:38 Step 9/50: decide next tool
+11:13:38 Web Agent: running redirect_check
+11:13:38 Run redirect_check -> http://scanme.nmap.org
+11:13:39 redirect_check: OK (0.94s)
+11:13:39 Parsed: {'redirect': True, 'final_url': 'http://scanme.nmap.org/'}
+ANALYSIS redirect_check [info]: The redirect check against http://scanme.nmap.org completed successfully and indicates a redirect/canonicalization response to http://scanme.nmap.org/. This appears to be a benign normalization to the trailing-slash root URL rather than a meaningful external redirect or security-impacting behavior.  | targets=http://scanme.nmap.org/, http://45.33.32.156/, http://nmap.scanme.nmap.org/ | tech=Apache httpd, Ubuntu, HTML5 | services=80/http, 80/http | evidence=redirect_check target http://scanme.nmap.org returned Success: True with output REDIRECT:http://scanme.nmap.org/. Prior reconnaissance context reports Apache httpd 2.4.7 on Ubuntu serving HTTP on port 80, a 200 OK page titled "Go ahead and 
+11:13:59 Analysis redirect_check: [INFO] The redirect check against http://scanme.nmap.org completed successfully and indicates a redirect/canonicalization response to http://scanme.nmap.org/. This appears to be a benign normalization to the trailing-slash root URL rather than a meaningful external redirect or security-impacting behavior. 
+FINDING [INFO] The redirect check against http://scanme.nmap.org completed successfully and indicates a redirect/canonicalization response to http://scanme.nmap.org/. This appears to be a benign normalization to the trailing-slash root URL rather than a meaningful external redirect or security-impacting behavior. In context, the target remains a simple HTTP-only Apache 2.4.7 service on Ubuntu with one additional discovered hostname, so further testing should focus on web content discovery, virtual host behavior, and legacy Apache/Ubuntu exposure rather than redirect abuse.
+11:13:59 Save finding [INFO]
+11:14:00 Step 10/50: decide next tool
+11:14:00 Web Agent: running ffuf_vhost
+11:14:00 Run ffuf_vhost -> http://scanme.nmap.org
+11:14:34 ffuf_vhost: OK (33.83s)
+11:14:34 Parsed: {'results': [], 'calibration': {'seconds': 15, 'max_restarts': 3, 'runs': [{'returncode': 0, 'runtime': 0.58, 'result_count': 24}, {'restart': 0, 'returncode': 0, 'runtime': 33.17, 'result_count': 0, 'filters': ['-fs', '6974', '-fw', '495', '-fl', '153']}], 'dominant_lengths': [6974], 'dominant_words': [495], 'dominant_lines': [153]}}
+ANALYSIS ffuf_vhost [info]: Virtual-host fuzzing against http://scanme.nmap.org using a 4,750-entry vhost wordlist did not identify any additional name-based virtual hosts under the scanme.nmap.org domain. ffuf initially observed many baseline responses, then calibrated the dominant catch-all response profile with size 6974, 4 | targets=http://scanme.nmap.org/, http://nmap.scanme.nmap.org/, http://scanme.nmap.org with alternate Host headers not matching the baseline response | tech=Apache httpd, Ubuntu, ffuf | services=80/http | evidence=ffuf command used Host-header fuzzing: `ffuf -u http://scanme.nmap.org ... -H Host: FUZZ.scanme.nmap.org -fc 404 -fs 6974 -fw 495 -fl 153`. The final `results` array is empty. Calibration showed an initial run with 24 apparent results, foll
+11:15:00 Analysis ffuf_vhost: [INFO] Virtual-host fuzzing against http://scanme.nmap.org using a 4,750-entry vhost wordlist did not identify any additional name-based virtual hosts under the scanme.nmap.org domain. ffuf initially observed many baseline responses, then calibrated the dominant catch-all response profile with size 6974, 4
+FINDING [INFO] Virtual-host fuzzing against http://scanme.nmap.org using a 4,750-entry vhost wordlist did not identify any additional name-based virtual hosts under the scanme.nmap.org domain. ffuf initially observed many baseline responses, then calibrated the dominant catch-all response profile with size 6974, 495 words, and 153 lines, and the final filtered run produced zero actionable results. This suggests either no discoverable vhosts exist in the tested wordlist, the server returns a uniform default page for unknown Host headers, or potentially valid vhosts were filtered out because they closely match the default response.
+11:15:00 Save finding [INFO]
+11:15:01 Step 11/50: decide next tool
+11:15:01 Web Agent: running httpx
+11:15:01 Run httpx -> http://scanme.nmap.org
+11:15:02 httpx: FAIL (0.44s)
+ANALYSIS httpx [low]: The httpx execution itself failed and produced no direct output, so it does not add new HTTP fingerprinting evidence beyond the existing reconnaissance context. Prior tooling indicates the target is reachable over HTTP on port 80, serves a 200 OK Apache default/custom page titled "Go ahead and ScanM | targets=http://scanme.nmap.org/, http://scanme.nmap.org/robots.txt, http://scanme.nmap.org/sitemap.xml | tech=Apache httpd, Ubuntu, HTML5 | services=80/http | evidence=httpx result: Success=False with no raw tool output. Session context reports prior WhatWeb evidence: HTTP on port 80 returns 200 OK, title "Go ahead and ScanMe!", Apache httpd 2.4.7 on Ubuntu. Prior nmap evidence reports scanme.nmap.org at 
+11:15:27 Analysis httpx: [LOW] The httpx execution itself failed and produced no direct output, so it does not add new HTTP fingerprinting evidence beyond the existing reconnaissance context. Prior tooling indicates the target is reachable over HTTP on port 80, serves a 200 OK Apache default/custom page titled "Go ahead and ScanM
+FINDING [LOW] The httpx execution itself failed and produced no direct output, so it does not add new HTTP fingerprinting evidence beyond the existing reconnaissance context. Prior tooling indicates the target is reachable over HTTP on port 80, serves a 200 OK Apache default/custom page titled "Go ahead and ScanMe!", and is running Apache httpd 2.4.7 on Ubuntu. Virtual-host fuzzing did not reveal additional vhosts, and redirect testing only identified benign canonicalization to a trailing-slash URL. In a CTF/boot2root context, this currently looks like a small exposed HTTP surface with one confirmed web service and an outdated Apache/Ubuntu stack worth enumerating more deeply.
+11:15:27 Save finding [LOW]
+11:15:28 Step 12/50: decide next tool
+11:15:28 Web Agent: running curl_headers
+11:15:28 Run curl_headers -> http://scanme.nmap.org
+11:15:28 curl_headers: OK (0.51s)
+11:15:28 Parsed: {'headers': {'date': 'Tue, 21 Jul 2026 04:15:29 GMT', 'server': 'Apache/2.4.7 (Ubuntu)', 'accept-ranges': 'bytes', 'vary': 'Accept-Encoding', 'content-type': 'text/html'}, 'missing_security': ['strict-transport-security', 'content-security-policy', 'x-frame-options', 'x-content-type-options']}
+ANALYSIS curl_headers [low]: The HTTP service on http://scanme.nmap.org is reachable and returns a 200 OK response from Apache httpd 2.4.7 on Ubuntu. The response exposes detailed server/version information via the Server header, which is useful for targeted vulnerability research and suggests an older Ubuntu-era Apache build.  | targets=http://scanme.nmap.org/, http://scanme.nmap.org/server-status, http://scanme.nmap.org/server-info | tech=Apache httpd, Ubuntu, HTML | services=80/http | evidence=curl_headers returned HTTP/1.1 200 OK for http://scanme.nmap.org. The response includes 'Server: Apache/2.4.7 (Ubuntu)', 'Content-Type: text/html', 'Accept-Ranges: bytes', and 'Vary: Accept-Encoding'. Prior context also indicates nmap found
+11:15:50 Analysis curl_headers: [LOW] The HTTP service on http://scanme.nmap.org is reachable and returns a 200 OK response from Apache httpd 2.4.7 on Ubuntu. The response exposes detailed server/version information via the Server header, which is useful for targeted vulnerability research and suggests an older Ubuntu-era Apache build. 
+FINDING [LOW] The HTTP service on http://scanme.nmap.org is reachable and returns a 200 OK response from Apache httpd 2.4.7 on Ubuntu. The response exposes detailed server/version information via the Server header, which is useful for targeted vulnerability research and suggests an older Ubuntu-era Apache build. No application-specific headers, cookies, redirects, or security headers are present in this header sample, so the immediate finding is primarily service fingerprinting and potential outdated software exposure.
+11:15:50 Save finding [LOW]
+11:15:50 Step 13/50: decide next tool
+11:15:50 Web Agent: running cms_detect
+11:15:50 Run cms_detect -> http://scanme.nmap.org
+11:15:59 cms_detect: OK (8.63s)
+11:15:59 Parsed: {'cms': [], 'frameworks': [], 'interesting_paths': [], 'root_url': 'http://scanme.nmap.org/', 'target': 'http://scanme.nmap.org', 'tech_discovered': []}
+ANALYSIS cms_detect [info]: The CMS detection run completed successfully against http://scanme.nmap.org but did not identify any CMS, web framework, interesting paths, or additional web technologies. In the broader recon context, the host appears to be a simple Apache-served static or minimally dynamic site on Ubuntu, with pri | targets=http://scanme.nmap.org/, http://scanme.nmap.org/robots.txt, http://scanme.nmap.org/sitemap.xml | tech=Apache httpd, Ubuntu, HTML5 | services=80/http | evidence=cms_detect returned success=true with empty arrays for cms, frameworks, interesting_paths, and tech_discovered against root_url http://scanme.nmap.org/. Existing session evidence indicates the HTTP service is reachable on port 80, returns 2
+11:16:20 Analysis cms_detect: [INFO] The CMS detection run completed successfully against http://scanme.nmap.org but did not identify any CMS, web framework, interesting paths, or additional web technologies. In the broader recon context, the host appears to be a simple Apache-served static or minimally dynamic site on Ubuntu, with pri
+FINDING [INFO] The CMS detection run completed successfully against http://scanme.nmap.org but did not identify any CMS, web framework, interesting paths, or additional web technologies. In the broader recon context, the host appears to be a simple Apache-served static or minimally dynamic site on Ubuntu, with prior evidence showing Apache httpd 2.4.7 and a 200 OK landing page titled "Go ahead and ScanMe!". This finding lowers the likelihood of CMS-specific attack paths such as WordPress, Joomla, or Drupal exploitation, but it does not rule out custom application flaws, Apache misconfiguration, exposed files, or hidden directories.
+11:16:20 Save finding [INFO]
+11:16:21 Step 14/50: decide next tool
+11:16:21 Web Agent: running katana
+11:16:21 Run katana -> http://scanme.nmap.org
+11:17:06 katana: OK (44.85s)
+11:17:06 Parsed: ['http://scanme.nmap.org', 'http://scanme.nmap.org/shared/css/nst-foot.css', 'http://scanme.nmap.org/shared/js/nst.js', 'http://scanme.nmap.org/shared/css/nst.css', 'http://scanme.nmap.org/shared/js/nst.js?v=2', 'http://scanme.nmap.org/site.css', 'http://scanme.nmap.org/shared/css/nst-foot.css?v=2', 'http://scanme.nmap.org/shared/css/nst.css?v=2', 'http://scanme.nmap.org/', 'https://nmap.org/npsl/', 'https://nmap.org/oem/', 'https://nmap.org', 'https://nmap.org/book/install.html', 'https://nmap.
+ANALYSIS katana [info]: Katana successfully crawled http://scanme.nmap.org and found a small, mostly static web surface consisting of the root page and shared CSS/JavaScript assets, with many outbound links to nmap.org, npcap.com, seclists.org, sectools.org, insecure.org, and social platforms. No application-specific dynam | targets=http://scanme.nmap.org/, http://scanme.nmap.org/site.css, http://scanme.nmap.org/shared/js/nst.js | tech=Apache httpd, Ubuntu, HTML5 | services=80/http | evidence=Katana output includes the root page and static local assets only: http://scanme.nmap.org, http://scanme.nmap.org/, http://scanme.nmap.org/site.css, http://scanme.nmap.org/shared/js/nst.js, http://scanme.nmap.org/shared/js/nst.js?v=2, http:
+11:17:32 Analysis katana: [INFO] Katana successfully crawled http://scanme.nmap.org and found a small, mostly static web surface consisting of the root page and shared CSS/JavaScript assets, with many outbound links to nmap.org, npcap.com, seclists.org, sectools.org, insecure.org, and social platforms. No application-specific dynam
+FINDING [INFO] Katana successfully crawled http://scanme.nmap.org and found a small, mostly static web surface consisting of the root page and shared CSS/JavaScript assets, with many outbound links to nmap.org, npcap.com, seclists.org, sectools.org, insecure.org, and social platforms. No application-specific dynamic endpoints, forms, API routes, authentication paths, CMS paths, upload handlers, or obvious parameterized URLs were discovered in this crawl. In the broader recon context, this supports the assessment that scanme.nmap.org is likely a deliberately minimal Apache-hosted landing page rather than a feature-rich web application, so web exploitation opportunities appear limited unless hidden paths or server-level vulnerabilities are found.
+11:17:32 Save finding [INFO]
+11:17:33 Step 15/50: decide next tool
+11:17:33 Web Agent: running js_dump
+11:17:33 Run js_dump -> http://scanme.nmap.org
+11:17:47 js_dump: OK (14.46s)
+11:17:47 Parsed: {'pages': ['http://scanme.nmap.org', 'http://scanme.nmap.org', 'http://scanme.nmap.org/shared/js/nst.js', 'http://scanme.nmap.org/shared/js/nst.js?v=2', 'http://scanme.nmap.org/', 'http://scanme.nmap.org/site.css', 'http://scanme.nmap.org/shared/css/nst.css', 'http://scanme.nmap.org/shared/css/nst.css?v=2', 'http://scanme.nmap.org/shared/css/nst-foot.css', 'http://scanme.nmap.org/shared/css/nst-foot.css?v=2', 'https://nmap.org/'], 'js_urls': ['http://scanme.nmap.org/scanme.nmap.org/shared/js/nst
+ANALYSIS js_dump [info]: The JavaScript crawl confirms that scanme.nmap.org exposes a very small, mostly static web surface consisting of the root page, shared CSS, and a single first-party JavaScript asset, with additional third-party scripts from Google Analytics and Twitter. The first-party script appears to be a shared  | targets=http://scanme.nmap.org/, http://scanme.nmap.org/shared/js/nst.js, http://scanme.nmap.org/shared/js/nst.js?v=2 | tech=Apache httpd, Ubuntu, Nmap Project Site Template / shared assets | services=80/http | evidence=The js_dump crawl succeeded and discovered pages/assets including http://scanme.nmap.org, http://scanme.nmap.org/, http://scanme.nmap.org/shared/js/nst.js, http://scanme.nmap.org/shared/js/nst.js?v=2, http://scanme.nmap.org/site.css, and sh
+11:18:21 Analysis js_dump: [INFO] The JavaScript crawl confirms that scanme.nmap.org exposes a very small, mostly static web surface consisting of the root page, shared CSS, and a single first-party JavaScript asset, with additional third-party scripts from Google Analytics and Twitter. The first-party script appears to be a shared 
+FINDING [INFO] The JavaScript crawl confirms that scanme.nmap.org exposes a very small, mostly static web surface consisting of the root page, shared CSS, and a single first-party JavaScript asset, with additional third-party scripts from Google Analytics and Twitter. The first-party script appears to be a shared Nmap Site Template asset reused between scanme.nmap.org and nmap.org, and no obvious application-specific API endpoints, credentials, source maps, or dynamic client-side routes were identified in this dump. From a CTF/boot2root perspective, this output does not reveal an immediate client-side exploit path, but it does identify several paths worth manually reviewing and reinforces that the exposed HTTP service is likely a static Apache-hosted site with limited attack surface.
+11:18:21 Save finding [INFO]
+FINDING [HIGH] Artifact saved: outputs/scanme.nmap.org/artifacts/js/scanme.nmap.org_shared_js_nst.js.a0f3b9ad.js
+11:18:21 Save finding [HIGH]
+FINDING [HIGH] Artifact saved: outputs/scanme.nmap.org/artifacts/js/scanme.nmap.org_shared_js_nst.js.a0f3b9ad.js
+11:18:21 Save finding [HIGH]
+FINDING [HIGH] Artifact saved: outputs/scanme.nmap.org/artifacts/js/www.google-analytics.com_analytics.js.f1a61277.js
+11:18:21 Save finding [HIGH]
+FINDING [HIGH] Artifact saved: outputs/scanme.nmap.org/artifacts/js/nmap.org_shared_js_nst.js.a0f3b9ad.js
+11:18:21 Save finding [HIGH]
+FINDING [HIGH] Artifact saved: outputs/scanme.nmap.org/artifacts/js/platform.twitter.com_widgets.js.2ba02cd5.js
+11:18:22 Save finding [HIGH]
+FINDING [HIGH] Artifact saved: outputs/scanme.nmap.org/artifacts/js/www.google-analytics.com_analytics.js.f1a61277.js
+11:18:22 Save finding [HIGH]
+11:18:22 Step 16/50: decide next tool
+11:18:22 Web Agent: running js_deobfuscate
+11:18:22 Run js_deobfuscate -> http://scanme.nmap.org
+11:18:23 js_deobfuscate: OK (0.09s)
+11:18:23 Parsed: {'decoded': [{'file': 'outputs/scanme.nmap.org/artifacts/js/nmap.org_shared_js_nst.js.a0f3b9ad.js', 'encoding': 'base64', 'input': 'com/treyhuffine/2ced8b8c503e5246e2fd258ddbd21b8c', 'decoded': 'rߊwǝ\x1cMn:{g۟\x1duvտ\x1c'}, {'file': 'outputs/scanme.nmap.org/artifacts/js/scanme.nmap.org_shared_js_nst.js.a0f3b9ad.js', 'encoding': 'base64', 'input': 'com/treyhuffine/2ced8b8c503e5246e2fd258ddbd21b8c', 'decoded': 'rߊwǝ\x1cMn:{g۟\x1duvտ\x1c'}, {'file': 'outputs/scanme.nmap.org/artifacts/js/www.google-
+ANALYSIS js_deobfuscate [info]: JavaScript deobfuscation/beautification completed successfully and produced local artifacts for first-party Nmap shared JavaScript as well as third-party Google Analytics and Twitter Widgets libraries. The attempted Base64 decodes appear to be false-positive pattern matches or non-meaningful decoded | targets=http://scanme.nmap.org/shared/js/nst.js, http://scanme.nmap.org/shared/js/nst.js?v=2, https://nmap.org/shared/js/nst.js?v=2 | tech=Apache httpd, Ubuntu Linux, Google Analytics Universal | services=80/http | evidence=Tool succeeded and produced beautified JavaScript artifacts: platform.twitter.com_widgets.js.2ba02cd5.js.beautified.js size 125575 sha256 f7f135ee86aab8cecdc61baedb902a48f670240582634fe9efb61f56e6ca5ab9; nmap.org_shared_js_nst.js.a0f3b9ad.j
+11:18:50 Analysis js_deobfuscate: [INFO] JavaScript deobfuscation/beautification completed successfully and produced local artifacts for first-party Nmap shared JavaScript as well as third-party Google Analytics and Twitter Widgets libraries. The attempted Base64 decodes appear to be false-positive pattern matches or non-meaningful decoded
+FINDING [INFO] JavaScript deobfuscation/beautification completed successfully and produced local artifacts for first-party Nmap shared JavaScript as well as third-party Google Analytics and Twitter Widgets libraries. The attempted Base64 decodes appear to be false-positive pattern matches or non-meaningful decoded binary/control-character output rather than exposed secrets. The most relevant first-party asset is /shared/js/nst.js, which should be manually reviewed for client-side logic, hidden paths, DOM sinks, and assumptions about server-side endpoints, but this output alone does not demonstrate an exploitable vulnerability.
+11:18:50 Save finding [INFO]
+FINDING [HIGH] Artifact saved: outputs/scanme.nmap.org/artifacts/js/platform.twitter.com_widgets.js.2ba02cd5.js.beautified.js
+11:18:50 Save finding [HIGH]
+FINDING [HIGH] Artifact saved: outputs/scanme.nmap.org/artifacts/js/nmap.org_shared_js_nst.js.a0f3b9ad.js.beautified.js
+11:18:50 Save finding [HIGH]
+FINDING [HIGH] Artifact saved: outputs/scanme.nmap.org/artifacts/js/scanme.nmap.org_shared_js_nst.js.a0f3b9ad.js.beautified.js
+11:18:50 Save finding [HIGH]
+FINDING [HIGH] Artifact saved: outputs/scanme.nmap.org/artifacts/js/www.google-analytics.com_analytics.js.f1a61277.js.beautified.js
+11:18:50 Save finding [HIGH]
+11:18:51 Step 17/50: decide next tool
+11:18:51 Web Agent: running js_mine
+11:18:51 Run js_mine -> http://scanme.nmap.org
+11:18:51 js_mine: OK (0.13s)
+11:18:51 Parsed: {'endpoints': ['http://scanme.nmap.org/analytics', 'http://scanme.nmap.org/collect', 'http://scanme.nmap.org/g,', 'http://scanme.nmap.org/j/collect', 'http://scanme.nmap.org/plugins/', 'http://scanme.nmap.org/plugins/ua/', 'http://scanme.nmap.org/widgets/hub.html', 'http://scanme.nmap.org/widgets/widget_iframe.1227a5674072e080ffb1ba14ac0c1079.html', 'http://www.google-analytics.com', 'https://ampcid.google.com/v1/publisher:getClientId', 'https://cdn.syndication.twimg.com', 'https://gist.github.c
+ANALYSIS js_mine [info]: JavaScript mining did not expose any secrets, source maps, or application-specific artifacts, but it identified numerous analytics and social-widget endpoints referenced by the target page. The observed JavaScript footprint is dominated by Google Analytics Universal and Twitter/X widget integrations | targets=http://scanme.nmap.org/analytics, http://scanme.nmap.org/collect, http://scanme.nmap.org/g, | tech=Apache httpd, Ubuntu Linux, Google Analytics Universal | services=80/http, 443/https, 443/https, 443/https | evidence=js_mine reported success and returned endpoints including target-relative paths: http://scanme.nmap.org/analytics, http://scanme.nmap.org/collect, http://scanme.nmap.org/g,, http://scanme.nmap.org/j/collect, http://scanme.nmap.org/plugins/,
+11:19:30 Analysis js_mine: [INFO] JavaScript mining did not expose any secrets, source maps, or application-specific artifacts, but it identified numerous analytics and social-widget endpoints referenced by the target page. The observed JavaScript footprint is dominated by Google Analytics Universal and Twitter/X widget integrations
+FINDING [INFO] JavaScript mining did not expose any secrets, source maps, or application-specific artifacts, but it identified numerous analytics and social-widget endpoints referenced by the target page. The observed JavaScript footprint is dominated by Google Analytics Universal and Twitter/X widget integrations rather than custom application logic, suggesting limited immediate exploitability from client-side code. The most interesting items are target-relative paths such as /analytics, /collect, /g,, /j/collect, /plugins/, /plugins/ua/, and /widgets/*, which should be manually verified to determine whether they are real server-side routes, static assets, or third-party tracking artifacts rewritten as local paths.
+11:19:31 Save finding [INFO]
+11:19:31 Step 18/50: decide next tool
+11:19:31 Web Agent: running ffuf_dir
+11:19:31 Run ffuf_dir -> http://scanme.nmap.org
+11:20:00 ffuf_dir: OK (28.73s)
+11:20:00 Parsed: {'results': [], 'calibration': {}}
+ANALYSIS ffuf_dir [medium]: Directory brute forcing against http://scanme.nmap.org identified a small Apache-hosted static-looking web root with several interesting paths: /index and /index.html return the same 200 response, while /images/, /shared/, and /.svn/ redirect as directories. Access to common sensitive dotfiles such  | targets=http://scanme.nmap.org/.svn/, http://scanme.nmap.org/.svn/entries, http://scanme.nmap.org/.svn/wc.db | tech=Apache httpd, Ubuntu, HTML | services=80/http | evidence=ffuf was run with: ffuf -u http://scanme.nmap.org/FUZZ -w ... -fc 404. Notable results include /.svn returning status 301 with redirectlocation http://scanme.nmap.org/.svn/ and length 316; /.svn/entries returning 403 length 294; /.htaccess 
+11:20:26 Analysis ffuf_dir: [MEDIUM] Directory brute forcing against http://scanme.nmap.org identified a small Apache-hosted static-looking web root with several interesting paths: /index and /index.html return the same 200 response, while /images/, /shared/, and /.svn/ redirect as directories. Access to common sensitive dotfiles such 
+FINDING [MEDIUM] Directory brute forcing against http://scanme.nmap.org identified a small Apache-hosted static-looking web root with several interesting paths: /index and /index.html return the same 200 response, while /images/, /shared/, and /.svn/ redirect as directories. Access to common sensitive dotfiles such as /.htaccess, /.htpasswd, /.hta, and /.svn/entries is denied with 403, which confirms Apache access controls are active but also suggests hidden/version-control-related paths exist and should be probed carefully. The presence of a browsable-looking /.svn directory redirect is the most notable lead because exposed Subversion metadata can sometimes disclose source files, repository structure, credentials, or historical content if individual metadata files are accessible despite some 403 responses.
+11:20:26 Save finding [MEDIUM]
+11:20:27 Step 19/50: decide next tool
+11:20:27 Web Agent: running ffuf_recursive
+11:20:27 Run ffuf_recursive -> http://scanme.nmap.org
+11:25:20 ffuf_recursive: OK (292.59s)
+11:25:20 Parsed: {'results': [], 'calibration': {}}
+ANALYSIS ffuf_recursive [medium]: Recursive ffuf enumeration of http://scanme.nmap.org found a mostly static Apache-hosted web root with several accessible and restricted paths. The most notable finding is the presence of a /.svn directory that redirects to /.svn/, while direct access to /.svn/entries is forbidden, indicating Subver | targets=http://scanme.nmap.org/.svn/, http://scanme.nmap.org/.svn/entries, http://scanme.nmap.org/.svn/wc.db | tech=Apache httpd, Ubuntu Linux, Subversion working copy metadata | services=80/http | evidence=ffuf command used recursive discovery against http://scanme.nmap.org/FUZZ with recursion depth 2 and filtered 404 responses. Notable results include /.svn returning 301 with redirectlocation http://scanme.nmap.org/.svn/, /.svn/entries retur
+11:25:51 Analysis ffuf_recursive: [MEDIUM] Recursive ffuf enumeration of http://scanme.nmap.org found a mostly static Apache-hosted web root with several accessible and restricted paths. The most notable finding is the presence of a /.svn directory that redirects to /.svn/, while direct access to /.svn/entries is forbidden, indicating Subver
+FINDING [MEDIUM] Recursive ffuf enumeration of http://scanme.nmap.org found a mostly static Apache-hosted web root with several accessible and restricted paths. The most notable finding is the presence of a /.svn directory that redirects to /.svn/, while direct access to /.svn/entries is forbidden, indicating Subversion working-copy metadata may exist but is access-controlled by the web server. The scan also confirmed /images/ and /shared/ as directory paths, and /index plus /index.html returning identical 200 responses, consistent with a simple static site using shared assets.
+11:25:51 Save finding [MEDIUM]
+11:25:51 Step 20/50: decide next tool
+11:25:51 Web Agent: running ffuf_ext
+11:25:51 Run ffuf_ext -> http://scanme.nmap.org
+11:30:52 ffuf_ext: FAIL (300.1071217060089s)
+ANALYSIS ffuf_ext [medium]: The extension brute-force tool did not return usable output and reported Success: False, so no new extension-specific endpoints can be confirmed from this run. However, prior ffuf enumeration shows the target is a mostly static Apache-hosted site with accessible and restricted paths, and the most im | targets=http://scanme.nmap.org/.svn/, http://scanme.nmap.org/.svn/entries, http://scanme.nmap.org/.svn/wc.db | tech=Apache httpd, Ubuntu Linux, HTML5 | services=80/http | evidence=Tool ffuf_ext returned Success: False with no direct output, so no new extension findings are proven by this run. Session context reports Apache httpd 2.4.7 on Ubuntu, an Apache-hosted static-looking web root, /index and /index.html returni
+11:31:20 Analysis ffuf_ext: [MEDIUM] The extension brute-force tool did not return usable output and reported Success: False, so no new extension-specific endpoints can be confirmed from this run. However, prior ffuf enumeration shows the target is a mostly static Apache-hosted site with accessible and restricted paths, and the most im
+FINDING [MEDIUM] The extension brute-force tool did not return usable output and reported Success: False, so no new extension-specific endpoints can be confirmed from this run. However, prior ffuf enumeration shows the target is a mostly static Apache-hosted site with accessible and restricted paths, and the most important confirmed lead remains exposed Subversion metadata under /.svn. In a CTF or boot2root context, exposed VCS metadata is a high-value information disclosure issue because it may allow reconstruction of source files, historical paths, credentials, deployment notes, or hidden application logic.
+11:31:21 Save finding [MEDIUM]
+11:31:21 Step 21/50: decide next tool
+11:31:21 Web Agent: running curl_body
+11:31:21 Run curl_body -> http://scanme.nmap.org/images/
+11:31:22 curl_body: OK (0.52s)
+11:31:22 Parsed: {'raw': '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">\n<html>\n <head>\n  <title>Index of /images</title>\n </head>\n <body>\n<h1>Index of /images</h1>\n  <table>\n   <tr><th valign="top"><img src="/icons/blank.gif" alt="[ICO]"></th><th><a href="?C=N;O=D">Name</a></th><th><a href="?C=M;O=A">Last modified</a></th><th><a href="?C=S;O=A">Size</a></th><th><a href="?C=D;O=A">Description</a></th></tr>\n   <tr><th colspan="5"><hr></th></tr>\n<tr><td valign="top"><img src="/icons/back.gif" al
+ANALYSIS curl_body [low]: The /images/ directory is browsable and exposes an Apache autoindex listing, confirming directory indexing is enabled for at least one static asset directory. The listing discloses server technology and version information via the footer: Apache/2.4.7 on Ubuntu, which is an old Apache release common | targets=http://scanme.nmap.org/images/, http://scanme.nmap.org/images/sitelogo.png, http://scanme.nmap.org/ | tech=Apache httpd, Ubuntu, Apache mod_autoindex | services=80/http | evidence=The response is an Apache-generated directory index for /images/: '<title>Index of /images</title>' and '<h1>Index of /images</h1>'. It lists a parent directory link and one image file: '<a href="sitelogo.png">sitelogo.png</a>' with timesta
+11:31:45 Analysis curl_body: [LOW] The /images/ directory is browsable and exposes an Apache autoindex listing, confirming directory indexing is enabled for at least one static asset directory. The listing discloses server technology and version information via the footer: Apache/2.4.7 on Ubuntu, which is an old Apache release common
+FINDING [LOW] The /images/ directory is browsable and exposes an Apache autoindex listing, confirming directory indexing is enabled for at least one static asset directory. The listing discloses server technology and version information via the footer: Apache/2.4.7 on Ubuntu, which is an old Apache release commonly associated with Ubuntu 14.04-era systems. Only one file, sitelogo.png, is exposed here, so this specific path is low impact by itself, but in combination with prior findings such as accessible /.svn metadata, it supports a broader information disclosure and source/configuration recovery attack path.
+11:31:45 Save finding [LOW]
+11:31:46 Step 22/50: decide next tool
+11:31:46 Web Agent: running cms_detect
+11:31:46 Run cms_detect -> http://scanme.nmap.org
+11:32:00 cms_detect: OK (13.56s)
+11:32:00 Parsed: {'cms': [{'confidence': 'medium', 'evidence': ['title: Go ahead and ScanMe!'], 'method': 'generic_inference', 'name': 'Go ahead and ScanMe!', 'version': ''}, {'confidence': 'medium', 'evidence': ['title: Index of /images'], 'method': 'generic_inference', 'name': 'Index of /images', 'version': ''}], 'frameworks': [], 'interesting_paths': [{'status': 200, 'url': 'http://scanme.nmap.org/images/'}, {'status': 200, 'url': 'http://scanme.nmap.org/images/'}, {'status': 200, 'url': 'http://scanme.nmap.o
+ANALYSIS cms_detect [medium]: The target appears to be a mostly static Apache-hosted website rather than a CMS, with page titles indicating a branded landing page and an exposed directory listing under /images. In the broader recon context, this host also shows signs of Apache autoindexing and exposed Subversion metadata, which  | targets=http://scanme.nmap.org/images/, http://scanme.nmap.org/index, http://scanme.nmap.org/index.html | tech=Apache httpd, Ubuntu Linux, Apache mod_autoindex | services=80/http | evidence=Raw output shows generic CMS inference only from page titles: "title: Go ahead and ScanMe!" and "title: Index of /images". The returned interesting paths include a live directory listing at "http://scanme.nmap.org/images/" and "http://scanm
+11:32:33 Analysis cms_detect: [MEDIUM] The target appears to be a mostly static Apache-hosted website rather than a CMS, with page titles indicating a branded landing page and an exposed directory listing under /images. In the broader recon context, this host also shows signs of Apache autoindexing and exposed Subversion metadata, which 
+FINDING [MEDIUM] The target appears to be a mostly static Apache-hosted website rather than a CMS, with page titles indicating a branded landing page and an exposed directory listing under /images. In the broader recon context, this host also shows signs of Apache autoindexing and exposed Subversion metadata, which are classic information-disclosure misconfigurations that can reveal source files, hidden paths, and deployment details. No direct RCE or auth bypass is evidenced here, but the exposed directories and version/control artifacts make this a promising CTF foothold for further enumeration.
+11:32:33 Save finding [MEDIUM]
+FINDING [INFO] CMS/framework detected: Go ahead and ScanMe!
+11:32:33 Save finding [INFO]
+FINDING [INFO] CMS/framework detected: Index of /images
+11:32:33 Save finding [INFO]
+11:32:34 Step 23/50: decide next tool
+11:32:34 Web Agent: running web_download_interesting
+11:32:34 Run web_download_interesting -> http://scanme.nmap.org/.htpasswd
+11:32:35 web_download_interesting: FAIL (0.57s)
+11:32:35 Parsed: {'_parse_error': 'invalid JSON'}
+ANALYSIS web_download_interesting [low]: A direct request to http://scanme.nmap.org/.htpasswd returned HTTP 403 Forbidden, indicating Apache is actively denying access to this sensitive filename rather than exposing it. This is a positive access-control result, but the existence of a 403 response still confirms that hidden/sensitive-file p | targets=http://scanme.nmap.org/.htpasswd, http://scanme.nmap.org/.htaccess, http://scanme.nmap.org/.svn/ | tech=Apache httpd, Ubuntu Linux, Apache mod_autoindex | services=80/http | evidence=The tool attempted to download http://scanme.nmap.org/.htpasswd and failed with urllib.error.HTTPError: HTTP Error 403: Forbidden. Session context also reports Apache httpd 2.4.7 on Ubuntu, Apache mod_autoindex, an exposed Index of /images,
+11:32:54 Analysis web_download_interesting: [LOW] A direct request to http://scanme.nmap.org/.htpasswd returned HTTP 403 Forbidden, indicating Apache is actively denying access to this sensitive filename rather than exposing it. This is a positive access-control result, but the existence of a 403 response still confirms that hidden/sensitive-file p
+FINDING [LOW] A direct request to http://scanme.nmap.org/.htpasswd returned HTTP 403 Forbidden, indicating Apache is actively denying access to this sensitive filename rather than exposing it. This is a positive access-control result, but the existence of a 403 response still confirms that hidden/sensitive-file probing reaches Apache-level authorization logic and should be compared against other dotfiles, backup extensions, and exposed metadata paths such as the previously discovered /.svn directory. In the broader reconnaissance context, the target appears to be a mostly static Apache 2.4.7 on Ubuntu site with mod_autoindex exposure and Subversion metadata, so credential/configuration disclosure remains a more promising path than this specific .htpasswd URL.
+11:32:54 Save finding [LOW]
+11:32:55 Step 24/50: decide next tool
+11:32:55 Web Agent: running curl_body
+11:32:55 Run curl_body -> http://scanme.nmap.org/.htpasswd
+11:32:55 curl_body: OK (0.49s)
+11:32:55 Parsed: {'raw': '<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">\n<html><head>\n<title>403 Forbidden</title>\n</head><body>\n<h1>Forbidden</h1>\n<p>You don\'t have permission to access /.htpasswd\non this server.</p>\n<hr>\n<address>Apache/2.4.7 (Ubuntu) Server at scanme.nmap.org Port 80</address>\n</body></html>\n'}
+ANALYSIS curl_body [low]: A direct request to http://scanme.nmap.org/.htpasswd returned HTTP 403 Forbidden rather than exposing credential hashes, indicating Apache is denying access to .ht* files as expected. The response discloses the web server banner as Apache/2.4.7 on Ubuntu, which is an old Apache version and should be | targets=http://scanme.nmap.org/.htpasswd, http://scanme.nmap.org/.htaccess, http://scanme.nmap.org/.svn/ | tech=Apache httpd, Ubuntu | services=80/http | evidence=Request to http://scanme.nmap.org/.htpasswd succeeded at the HTTP transport level but returned an Apache 403 Forbidden page: '<h1>Forbidden</h1><p>You don't have permission to access /.htpasswd on this server.</p>'. The footer disclosed '<a
+11:33:15 Analysis curl_body: [LOW] A direct request to http://scanme.nmap.org/.htpasswd returned HTTP 403 Forbidden rather than exposing credential hashes, indicating Apache is denying access to .ht* files as expected. The response discloses the web server banner as Apache/2.4.7 on Ubuntu, which is an old Apache version and should be
+FINDING [LOW] A direct request to http://scanme.nmap.org/.htpasswd returned HTTP 403 Forbidden rather than exposing credential hashes, indicating Apache is denying access to .ht* files as expected. The response discloses the web server banner as Apache/2.4.7 on Ubuntu, which is an old Apache version and should be treated as useful fingerprinting information in the broader CTF/boot2root chain. This finding is not directly exploitable by itself, but it reinforces that sensitive dotfiles and metadata paths are relevant on this host, especially given prior discovery of exposed Subversion metadata.
+11:33:15 Save finding [LOW]
+11:33:16 Step 25/50: decide next tool
+11:33:16 Web Agent: running arjun
+11:33:16 Run arjun -> http://scanme.nmap.org
+11:33:16 arjun: OK (0.01s)
+ANALYSIS arjun [info]: Arjun completed successfully against http://scanme.nmap.org but returned an empty result set, meaning it did not identify any reflected or discoverable HTTP GET/POST parameter names from the tested target surface. In the current reconnaissance context, this supports the assessment that the site is p | targets=http://scanme.nmap.org/, http://scanme.nmap.org/index, http://scanme.nmap.org/index.html | tech=Apache httpd, Ubuntu Linux, Apache mod_autoindex | services=80/http | evidence=Arjun target: http://scanme.nmap.org; Success: True; Tool output: {}. The empty JSON object indicates no parameters were discovered by this run. Session context additionally reports a mostly static Apache-hosted site, Apache httpd 2.4.7 on 
+11:33:39 Analysis arjun: [INFO] Arjun completed successfully against http://scanme.nmap.org but returned an empty result set, meaning it did not identify any reflected or discoverable HTTP GET/POST parameter names from the tested target surface. In the current reconnaissance context, this supports the assessment that the site is p
+FINDING [INFO] Arjun completed successfully against http://scanme.nmap.org but returned an empty result set, meaning it did not identify any reflected or discoverable HTTP GET/POST parameter names from the tested target surface. In the current reconnaissance context, this supports the assessment that the site is primarily static Apache-hosted content rather than a parameter-driven web application. The lack of parameters reduces immediate likelihood of classic parameter-based issues such as SQL injection, LFI, IDOR, and reflected XSS on the tested URLs, but prior findings such as exposed Subversion metadata and Apache autoindex remain more valuable attack leads.
+11:33:39 Save finding [INFO]
+11:33:40 Step 26/50: decide next tool
+11:33:40 Web Agent: running subdomain_live
+11:33:40 Run subdomain_live -> scanme.nmap.org
+11:34:32 subdomain_live: OK (51.78s)
+ANALYSIS subdomain_live [medium]: The subdomain_live step completed successfully for scanme.nmap.org, but the provided raw tool output does not list any newly discovered live subdomains or additional hosts. In context, reconnaissance has already identified a mostly static Apache 2.4.7 site on Ubuntu with Apache autoindex enabled und | targets=http://scanme.nmap.org/, http://scanme.nmap.org/index, http://scanme.nmap.org/index.html | tech=Apache httpd, Ubuntu Linux, Apache mod_autoindex | services=80/http | evidence=The subdomain_live tool reported Success: True but did not provide visible raw host output. Session context identifies Apache httpd 2.4.7 on Ubuntu, a mostly static Apache-hosted Nmap Project-branded site, Google Analytics Universal, Twitte
+11:34:57 Analysis subdomain_live: [MEDIUM] The subdomain_live step completed successfully for scanme.nmap.org, but the provided raw tool output does not list any newly discovered live subdomains or additional hosts. In context, reconnaissance has already identified a mostly static Apache 2.4.7 site on Ubuntu with Apache autoindex enabled und
+FINDING [MEDIUM] The subdomain_live step completed successfully for scanme.nmap.org, but the provided raw tool output does not list any newly discovered live subdomains or additional hosts. In context, reconnaissance has already identified a mostly static Apache 2.4.7 site on Ubuntu with Apache autoindex enabled under /images and exposed Subversion working copy metadata under /.svn, which is the most actionable finding because it may allow source disclosure, recovery of deleted files, credentials, or hidden paths. The environment appears intentionally public and static, but the combination of legacy Apache/Ubuntu fingerprinting, directory indexing, and SCM metadata exposure is significant in a CTF/boot2root workflow.
+11:34:57 Save finding [MEDIUM]
+11:34:57 Step 27/50: decide next tool
+11:34:57 Web Agent: running nuclei_smart
+11:34:57 Run nuclei_smart -> http://scanme.nmap.org
+11:34:59 nuclei_smart: FAIL (1.17s)
+ANALYSIS nuclei_smart [medium]: The nuclei_smart scan did not execute successfully because the local Nuclei template directory is incomplete or missing, specifically the http/exposures template path. As a result, no new vulnerability findings can be attributed to Nuclei from this run; however, existing reconnaissance context still | targets=http://scanme.nmap.org/, http://scanme.nmap.org/index, http://scanme.nmap.org/index.html | tech=Apache httpd, Ubuntu Linux, Apache mod_autoindex | services=80/http | evidence=Nuclei failed before scanning: '[FTL] Could not run nuclei: could not create automatic scan service: could not get templates in directory: could not find file: open /home/ngannguyen/.local/nuclei-templates/http/exposures/: no such file or d
+11:35:22 Analysis nuclei_smart: [MEDIUM] The nuclei_smart scan did not execute successfully because the local Nuclei template directory is incomplete or missing, specifically the http/exposures template path. As a result, no new vulnerability findings can be attributed to Nuclei from this run; however, existing reconnaissance context still
+FINDING [MEDIUM] The nuclei_smart scan did not execute successfully because the local Nuclei template directory is incomplete or missing, specifically the http/exposures template path. As a result, no new vulnerability findings can be attributed to Nuclei from this run; however, existing reconnaissance context still indicates an Apache 2.4.7 Ubuntu-hosted static site with directory listing under /images and exposed Subversion metadata under /.svn, both of which are valuable CTF attack leads. The most important immediate issue is not a confirmed Nuclei finding, but the need to manually investigate the already discovered /.svn exposure and Apache mod_autoindex behavior.
+11:35:22 Save finding [MEDIUM]
+11:35:23 Step 28/50: decide next tool
+11:35:23 Web Agent: running nuclei_cve
+11:35:23 Run nuclei_cve -> http://scanme.nmap.org
+11:35:24 nuclei_cve: FAIL (0.78s)
+ANALYSIS nuclei_cve [medium]: The nuclei_cve step did not execute because the local Nuclei installation has no templates configured, so this run produced no CVE validation against http://scanme.nmap.org. In the broader reconnaissance context, the target appears to be a mostly static Apache httpd 2.4.7 site on Ubuntu with Apache  | targets=http://scanme.nmap.org/, http://scanme.nmap.org/.svn/, http://scanme.nmap.org/.svn/entries | tech=Apache httpd, Ubuntu Linux, Apache mod_autoindex | services=80/http | evidence=The nuclei_cve tool returned Success: False with fatal error: "Could not run nuclei: no templates provided for scan", meaning no CVE findings were produced by this run. Existing session context identifies Apache httpd 2.4.7 on Ubuntu, Apach
+11:36:01 Analysis nuclei_cve: [MEDIUM] The nuclei_cve step did not execute because the local Nuclei installation has no templates configured, so this run produced no CVE validation against http://scanme.nmap.org. In the broader reconnaissance context, the target appears to be a mostly static Apache httpd 2.4.7 site on Ubuntu with Apache 
+FINDING [MEDIUM] The nuclei_cve step did not execute because the local Nuclei installation has no templates configured, so this run produced no CVE validation against http://scanme.nmap.org. In the broader reconnaissance context, the target appears to be a mostly static Apache httpd 2.4.7 site on Ubuntu with Apache autoindex enabled and exposed Subversion working-copy metadata, which is more actionable than the failed CVE scan itself. The most important follow-up is to fix the Nuclei template installation and manually investigate the exposed /.svn content for source disclosure, hidden paths, credentials, or deployment artifacts.
+11:36:01 Save finding [MEDIUM]
+11:36:02 Step 29/50: decide next tool
+11:36:02 Web Agent: done
+11:36:02 Service Agent: running dns_check
+11:36:02 Run dns_check -> scanme.nmap.org
+11:36:03 dns_check: OK (1.04s)
+11:36:03 Parsed: {'service': 'dns', 'purpose': 'DNS recursion and zone leakage', 'ports': '53'}
+ANALYSIS dns_check [info]: The DNS recursion/zone-leakage check against scanme.nmap.org found port 53 closed, so this host does not appear to expose a DNS service directly. This reduces the likelihood of DNS-specific attack paths such as open recursion, AXFR zone transfer, or DNS service exploitation on the target host itself | targets=http://scanme.nmap.org/, http://scanme.nmap.org/images/, http://scanme.nmap.org/.svn/ | tech=DNS, Apache httpd, Ubuntu Linux | services=53/closed | evidence=Tool output shows service=dns, purpose=DNS recursion and zone leakage, ports=53, and '53: closed'. This indicates the target host scanme.nmap.org is not listening on DNS port 53 for the tested check. Session context separately identifies th
+11:36:21 Analysis dns_check: [INFO] The DNS recursion/zone-leakage check against scanme.nmap.org found port 53 closed, so this host does not appear to expose a DNS service directly. This reduces the likelihood of DNS-specific attack paths such as open recursion, AXFR zone transfer, or DNS service exploitation on the target host itself
+FINDING [INFO] The DNS recursion/zone-leakage check against scanme.nmap.org found port 53 closed, so this host does not appear to expose a DNS service directly. This reduces the likelihood of DNS-specific attack paths such as open recursion, AXFR zone transfer, or DNS service exploitation on the target host itself. In the broader CTF context, effort should remain focused on the confirmed Apache HTTP surface, exposed directory listing, and previously identified Subversion metadata rather than DNS on this host.
+11:36:21 Save finding [INFO]
+11:36:22 Step 30/50: decide next tool
+11:36:22 Service Agent: done
+11:36:22 Report Agent: done
+11:36:22 Report Agent: generating report
+11:36:22 Report Agent: done
+11:36:22 Session complete
+FINAL SUMMARY
+Final Recon Summary
+Target: scanme.nmap.org
+Findings: 42
+Severity: critical=0, high=0, medium=17, low=7, info=18
+
+Ports / Services
+53/DNS resolution observed via recursive resolver
+53/closed
+80/Apache httpd 2.4.7
+80/Apache/2.4.7 (Ubuntu)
+80/HTTP
+80/HTTP - Apache httpd 2.4.7 on Ubuntu
+80/http
+443/https
+
+Web Targets
+http://scanme.nmap.org
+
+Non-Web Services
+53/DNS resolution observed via recursive resolver
+53/closed
+
+Tech
+Apache httpd 2.4.7
+Ubuntu unknown
+Nmap Project favicon/site unknown
+DNS A record N/A
+subfinder 2.14.0
+dnsx unknown; installed build does not support -oJ
+Nmap Project site/branding unknown
+Ubuntu Linux unknown
+Google Analytics Universal
+HTML5 unknown
+... +27 more
+
+High-Value Findings
+[MEDIUM] js_dump: Artifact saved: source from http://scanme.nmap.org/shared/js/nst.js
+[MEDIUM] js_dump: Artifact saved: source from http://scanme.nmap.org/shared/js/nst.js?v=2
+[MEDIUM] js_dump: Artifact saved: source from http://www.google-analytics.com/analytics.js
+[MEDIUM] js_dump: Artifact saved: source from https://nmap.org/shared/js/nst.js?v=2
+[MEDIUM] js_dump: Artifact saved: source from https://platform.twitter.com/widgets.js
+[MEDIUM] js_dump: Artifact saved: source from https://www.google-analytics.com/analytics.js
+[MEDIUM] js_deobfuscate: Artifact saved: source from outputs/scanme.nmap.org/artifacts/js/platform.twitter.com_widgets.js.2ba02cd5.js
+[MEDIUM] js_deobfuscate: Artifact saved: source from outputs/scanme.nmap.org/artifacts/js/nmap.org_shared_js_nst.js.a0f3b9ad.js
+... +24 more
+
+Artifacts (10)
+source: outputs/scanme.nmap.org/artifacts/js/scanme.nmap.org_shared_js_nst.js.a0f3b9ad.js (2235 bytes)
+source: outputs/scanme.nmap.org/artifacts/js/scanme.nmap.org_shared_js_nst.js.a0f3b9ad.js (2235 bytes)
+source: outputs/scanme.nmap.org/artifacts/js/www.google-analytics.com_analytics.js.f1a61277.js (52310 bytes)
+source: outputs/scanme.nmap.org/artifacts/js/nmap.org_shared_js_nst.js.a0f3b9ad.js (2235 bytes)
+source: outputs/scanme.nmap.org/artifacts/js/platform.twitter.com_widgets.js.2ba02cd5.js (93967 bytes)
+source: outputs/scanme.nmap.org/artifacts/js/www.google-analytics.com_analytics.js.f1a61277.js (52310 bytes)
+source: outputs/scanme.nmap.org/artifacts/js/platform.twitter.com_widgets.js.2ba02cd5.js.beautified.js (125575 bytes)
+source: outputs/scanme.nmap.org/artifacts/js/nmap.org_shared_js_nst.js.a0f3b9ad.js.beautified.js (2655 bytes)
+... +2 more
+
+Reports
+Markdown: outputs/scanme.nmap.org/recon-report.md
+JSON: outputs/scanme.nmap.org/recon-report.json
+Live log: outputs/scanme.nmap.org/live-activity.log
+
+Complete.
